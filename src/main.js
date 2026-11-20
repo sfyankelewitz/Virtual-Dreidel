@@ -353,9 +353,17 @@ const potCoinSpots = [
   [-1.48, -0.9], [1.48, 0.9], [0.0, -1.55]
 ];
 function createCoin(name) {
-  const coin = MeshBuilder.CreateCylinder(name, { diameter: 0.46, height: 0.065, tessellation: 48 }, scene);
+  const coin = MeshBuilder.CreateCylinder(name, { diameterTop: 0.43, diameterBottom: 0.46, height: 0.065, tessellation: 64 }, scene);
   coin.material = coinMat;
-  coin.rotation.z = (Math.random() - 0.5) * 0.08;
+  coin.rotation.z = (Math.random() - 0.5) * 0.025;
+  const rim = MeshBuilder.CreateTorus(name + "Rim", { diameter: 0.34, thickness: 0.018, tessellation: 48 }, scene);
+  rim.parent = coin; rim.position.y = 0.034; rim.material = brass;
+  const medallion = MeshBuilder.CreateCylinder(name + "Medallion", { diameter: 0.24, height: 0.008, tessellation: 48 }, scene);
+  medallion.parent = coin; medallion.position.y = 0.034; medallion.material = pbr("coinFaceGold", "#f5d783", 0.9, 0.2);
+  for (let ray = 0; ray < 6; ray++) {
+    const mark = MeshBuilder.CreateBox(name + "MintMark", { width: 0.018, height: 0.006, depth: 0.085 }, scene);
+    mark.parent = coin; mark.position.y = 0.04; mark.rotation.y = ray * Math.PI / 3; mark.material = brass;
+  }
   shadows.addShadowCaster(coin);
   return coin;
 }
@@ -397,8 +405,8 @@ seatPositions.forEach((pos, i) => {
   plaque.rotation.y = Math.atan2(-nameDirection.x, -nameDirection.z);
   plaque.material = darkWood;
   const plaqueRim = MeshBuilder.CreateBox("playerNamePlaqueRim", { width: 1.78, height: 0.56, depth: 0.055 }, scene);
-  plaqueRim.position.copyFrom(plaque.position);
-  plaqueRim.rotation.copyFrom(plaque.rotation);
+  plaqueRim.position.set(0, 0, -0.055);
+  plaqueRim.rotation.set(0, 0, 0);
   plaqueRim.material = brass;
   plaqueRim.parent = plaque;
   const texture = new DynamicTexture("playerNameTexture" + i, { width: 512, height: 128 }, scene, true);
@@ -427,8 +435,10 @@ function updatePlayerCoinStacks() {
     const visibleCount = Math.min(12, Math.ceil(balance / 10));
     const pile = playerCoinMeshes[playerIndex];
     while (pile.length < visibleCount) {
-      const coin = MeshBuilder.CreateCylinder("playerReserveCoin", { diameter: 0.25, height: 0.045, tessellation: 40 }, scene);
+      const coin = MeshBuilder.CreateCylinder("playerReserveCoin", { diameterTop: 0.235, diameterBottom: 0.25, height: 0.045, tessellation: 48 }, scene);
       coin.material = coinMat;
+      const coinRim = MeshBuilder.CreateTorus("playerReserveCoinRim", { diameter: 0.19, thickness: 0.012, tessellation: 32 }, scene);
+      coinRim.parent = coin; coinRim.position.y = 0.024; coinRim.material = brass;
       shadows.addShadowCaster(coin);
       pile.push(coin);
     }
@@ -477,7 +487,7 @@ function letterMaterial(letter, name) {
   const ctx = texture.getContext();
   ctx.clearRect(0, 0, 512, 512);
   ctx.fillStyle = "#f0d5a1";
-  ctx.font = "bold 300px Arial, sans-serif";
+  ctx.font = "bold 340px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "#fff0c8";
@@ -493,7 +503,7 @@ function letterMaterial(letter, name) {
 }
 
 const dreidelRoot = new TransformNode("dreidelRoot", scene);
-dreidelRoot.scaling.setAll(1.55);
+dreidelRoot.scaling.setAll(1.78);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
 const dreidelWoodTexture = woodTexture();
 bodyMat.albedoTexture = dreidelWoodTexture;
@@ -549,21 +559,21 @@ const faceRotations = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
 faceLetters.forEach((letter, i) => {
   const a = faceRotations[i];
   // Raised brass frame, dark inset, and a clear gold Hebrew letter on each side.
-  const frame = MeshBuilder.CreateBox("dreidelFaceFrame" + i, { width: 0.59, height: 0.66, depth: 0.055 }, scene);
+  const frame = MeshBuilder.CreateBox("dreidelFaceFrame" + i, { width: 0.65, height: 0.74, depth: 0.06 }, scene);
   frame.parent = dreidelRoot;
   frame.position.set(Math.sin(a) * 0.34, 1.03, Math.cos(a) * 0.34);
   frame.rotation.y = a;
   frame.material = brass;
 
-  const inset = MeshBuilder.CreateBox("dreidelFaceInset" + i, { width: 0.51, height: 0.58, depth: 0.035 }, scene);
+  const inset = MeshBuilder.CreateBox("dreidelFaceInset" + i, { width: 0.57, height: 0.66, depth: 0.04 }, scene);
   inset.parent = dreidelRoot;
   inset.position.set(Math.sin(a) * 0.377, 1.03, Math.cos(a) * 0.377);
   inset.rotation.y = a;
   inset.material = darkWood;
 
-  const face = MeshBuilder.CreatePlane("hebrewFace" + i, { width: 0.41, height: 0.49, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
+  const face = MeshBuilder.CreatePlane("hebrewFace" + i, { width: 0.49, height: 0.57, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
   face.parent = dreidelRoot;
-  face.position.set(Math.sin(a) * 0.401, 1.03, Math.cos(a) * 0.401);
+  face.position.set(Math.sin(a) * 0.412, 1.03, Math.cos(a) * 0.412);
   face.rotation.y = a;
   face.material = letterMaterial(letter, "letter" + i);
 });
@@ -743,7 +753,7 @@ scene.onBeforeRenderObservable.add(() => {
     dreidelRoot.rotation.z = 0.12;
     dreidelRoot.position.x = 0;
     dreidelRoot.position.z = 0;
-    dreidelRoot.position.y = 0.48;
+    dreidelRoot.position.y = 0.52;
     settleResult();
   }
 });
