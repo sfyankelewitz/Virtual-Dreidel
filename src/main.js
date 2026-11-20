@@ -1552,11 +1552,11 @@ scene.meshes.forEach(mesh => {
 // FULL ART OVERHAUL — rounded, colorful storybook game world.
 // Keep the gameplay table, dreidel, coins and player tokens; replace the old
 // noisy room/furniture set with a clean, deliberately composed toy-like world.
-const oldRoomPattern = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcaseBack|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsoleTop|consoleLeg|menorahBase|menorahCenterStem|menorahBranch|menorahCandleCup|menorahCandle|menorahFlame|wallArtFrame|wallArtCanvas|artSun|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade|storybookFireplace.*|fireplace.*|storybookFireFlame)$/i;
+const oldRoomPattern = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcaseBack|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsoleTop|consoleLeg|menorahBase|menorahCenterStem|menorahBranch|menorahCandleCup|menorahCandle|menorahFlame|wallArtFrame|wallArtCanvas|artSun|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade|fireplaceOuterStone|fireplaceOpening|fireplaceHearth|fireplaceMantel|fireplaceRoundedPillar|storybookFireFlame)$/i;
 scene.meshes.forEach(mesh => {
   if (oldRoomPattern.test(mesh.name)) mesh.setEnabled(false);
 });
-scene.transformNodes.filter(node => /PolyHaven|livingRoomArmchair|storybookFireplace/i.test(node.name)).forEach(node => node.setEnabled(false));
+scene.transformNodes.filter(node => /PolyHaven|^livingRoomArmchair|^storybookFireplace$/i.test(node.name)).forEach(node => node.setEnabled(false));
 
 // Smooth, saturated materials: no photographic grain or noisy bump maps.
 function toyMat(name, hex, roughness = 0.78, emissive = false) {
