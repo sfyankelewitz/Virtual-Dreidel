@@ -1040,8 +1040,10 @@ function advanceTurn() {
   const activePlayers = balances.map((balance, index) => balance > 0 ? index : -1).filter(index => index >= 0);
   if (activePlayers.length <= 1 || balances[0] <= 0) {
     gameOver = true;
-    const winningBalance = Math.max(...balances);
-    const winnerIndex = balances.indexOf(winningBalance);
+    const winnerIndex = activePlayers.length === 1
+      ? activePlayers[0]
+      : 1 + balances.slice(1).indexOf(Math.max(...balances.slice(1)));
+    const winningBalance = balances[winnerIndex];
     const winnerName = names[winnerIndex];
     if (winnerIndex === 0) gameWins += 1;
     else gameLosses += 1;
