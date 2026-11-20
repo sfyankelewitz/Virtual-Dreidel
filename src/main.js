@@ -12,7 +12,7 @@ const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = null;
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 15.2, new Vector3(0, 1.15, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 17.5, new Vector3(0, 1.15, 0), scene);
 camera.attachControl(canvas, true);
 camera.lowerRadiusLimit = 11.5;
 camera.upperRadiusLimit = 22;
@@ -309,6 +309,7 @@ bodyBand.parent = dreidelRoot;
 bodyBand.position.y = 1.48;
 bodyBand.rotation.y = Math.PI / 4;
 bodyBand.material = brass;
+shadows.addShadowCaster(bodyBand);
 
 const topCollar = MeshBuilder.CreateCylinder("dreidelShoulder", { height: 0.16, diameterTop: 0.48, diameterBottom: 0.85, tessellation: 4 }, scene);
 topCollar.parent = dreidelRoot; topCollar.position.y = 1.68; topCollar.rotation.y = Math.PI / 4; topCollar.material = brass;
