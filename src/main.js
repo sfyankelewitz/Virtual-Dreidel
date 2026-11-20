@@ -413,7 +413,28 @@ function letterMaterial(letter, name) {
 const dreidelRoot = new TransformNode("dreidelRoot", scene);
 dreidelRoot.scaling.setAll(1.55);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
-bodyMat.albedoTexture = woodTexture();
+const dreidelWoodTexture = woodTexture();
+bodyMat.albedoTexture = dreidelWoodTexture;
+let selectedFinish = "walnut";
+function setDreidelFinish(finish) {
+  selectedFinish = finish;
+  if (finish === "midnight") {
+    bodyMat.albedoTexture = null;
+    bodyMat.albedoColor = Color3.FromHexString("#263d5b");
+    bodyMat.metallic = 0.38; bodyMat.roughness = 0.27;
+  } else if (finish === "ivory") {
+    bodyMat.albedoTexture = null;
+    bodyMat.albedoColor = Color3.FromHexString("#d9c8a6");
+    bodyMat.metallic = 0.08; bodyMat.roughness = 0.34;
+  } else {
+    bodyMat.albedoTexture = dreidelWoodTexture;
+    bodyMat.albedoColor = Color3.FromHexString("#80502d");
+    bodyMat.metallic = 0.12; bodyMat.roughness = 0.29;
+  }
+  document.querySelectorAll(".finish-option").forEach(button => {
+    button.classList.toggle("active", button.dataset.finish === finish);
+  });
+}
 const body = MeshBuilder.CreateCylinder("fourSidedDreidelBody", {
   height: 1.28, diameterTop: 1.08, diameterBottom: 0.19, tessellation: 4, subdivisions: 1
 }, scene);
@@ -509,6 +530,9 @@ function refreshUI() {
     row.classList.toggle("active", i === turn && !gameOver);
     row.querySelector("small").textContent = balances[i] <= 0 ? "Out of coins" :
       i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") : "Ready";
+  });
+  document.querySelectorAll(".finish-option").forEach(button => {
+    button.classList.toggle("active", button.dataset.finish === selectedFinish);
   });
   document.querySelectorAll(".bet-option").forEach(button => {
     const amount = Number(button.dataset.bet);
@@ -740,6 +764,9 @@ function settleResult() {
   refreshUI();
 }
 
+document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
+  setDreidelFinish(button.dataset.finish);
+}));
 document.querySelectorAll(".bet-option").forEach(button => button.addEventListener("click", () => {
   bet = Number(button.dataset.bet);
   refreshUI();
