@@ -812,6 +812,53 @@ const names = ["You", "Sarah", "David", "Moishe"];
 const letters = ["נ", "ג", "ה", "ש"];
 const resultNames = { "נ": "NUN — Nothing happens", "ג": "GIMEL — Take the whole pot!", "ה": "HEY — Take half the pot", "ש": "SHIN — Add one coin to the pot" };
 const $ = id => document.getElementById(id);
+let soundEnabled = true;
+let audioContext = null;
+function getAudioContext() {
+  if (!soundEnabled) return null;
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!audioContext) audioContext = new AudioContextClass();
+    if (audioContext.state === "suspended") audioContext.resume();
+    return audioContext;
+  } catch { return null; }
+}
+function playSpinSound() {
+  const audio = getAudioContext();
+  if (!audio) return;
+  const now = audio.currentTime;
+  const oscillator = audio.createOscillator();
+  const overtone = audio.createOscillator();
+  const gain = audio.createGain();
+  oscillator.type = "triangle"; overtone.type = "sine";
+  oscillator.frequency.setValueAtTime(245, now);
+  oscillator.frequency.exponentialRampToValueAtTime(78, now + 3.8);
+  overtone.frequency.setValueAtTime(490, now);
+  overtone.frequency.exponentialRampToValueAtTime(156, now + 3.8);
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.045, now + 0.12);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 3.9);
+  oscillator.connect(gain); overtone.connect(gain); gain.connect(audio.destination);
+  oscillator.start(now); overtone.start(now);
+  oscillator.stop(now + 4); overtone.stop(now + 4);
+}
+function playCoinChime() {
+  const audio = getAudioContext();
+  if (!audio) return;
+  const now = audio.currentTime;
+  [880, 1108, 1320].forEach((frequency, index) => {
+    const oscillator = audio.createOscillator();
+    const gain = audio.createGain();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, now + index * 0.055);
+    gain.gain.setValueAtTime(0.0001, now + index * 0.055);
+    gain.gain.linearRampToValueAtTime(0.055, now + index * 0.055 + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.48 + index * 0.055);
+    oscillator.connect(gain); gain.connect(audio.destination);
+    oscillator.start(now + index * 0.055); oscillator.stop(now + 0.55 + index * 0.055);
+  });
+}
 
 function refreshUI() {
   $("potValue").textContent = pot;
@@ -906,6 +953,7 @@ function beginSpin(playerIndex, wager) {
   animateCoinTransfer(playerIndex, null, wager);
   spinElapsed = 0;
   falling = false; fallElapsed = 0;
+  playSpinSound();
   spinDuration = (playerIndex === 0 ? 4.0 : 3.25) + Math.random() * 0.65;
   spinSpeed = 24 + Math.random() * 7;
   resultLetter = letters[Math.floor(Math.random() * letters.length)];
@@ -1035,6 +1083,7 @@ function settleResult() {
     message = "No change.";
   }
   if (resultLetter === "ג" || resultLetter === "ה") celebrationElapsed = 0.001;
+  if (resultLetter === "ג" || resultLetter === "ה") playCoinChime();
   $("sceneResult").textContent = resultLetter + "  ·  " + resultNames[resultLetter];
   $("sceneResult").classList.add("show");
   addActivity(resultLetter + " — " + message);
@@ -1050,6 +1099,12 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
   refreshUI();
 }));
 $("spinButton").addEventListener("click", spinDreidel);
+$("soundToggle").addEventListener("click", () => {
+  soundEnabled = !soundEnabled;
+  $("soundToggle").textContent = soundEnabled ? "♫" : "♪";
+  $("soundToggle").classList.toggle("muted", !soundEnabled);
+  $("soundToggle").setAttribute("aria-label", soundEnabled ? "Mute sound" : "Enable sound");
+});
 function setCameraPreset(mode) {
   if (mode === "table") {
     camera.setTarget(new Vector3(0, 0.45, 0));
