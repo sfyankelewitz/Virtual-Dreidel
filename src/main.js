@@ -42,6 +42,8 @@ const tableFill = new PointLight("tableSoftboxFill", new Vector3(-1.5, 7.5, -1.2
 tableFill.diffuse = new Color3(1, 0.84, 0.66);
 tableFill.intensity = 0.55;
 tableFill.range = 15;
+const turnSpot = new PointLight("activePlayerSpotlight", new Vector3(0, 4.2, -5.5), scene);
+turnSpot.diffuse = new Color3(1, 0.77, 0.43); turnSpot.intensity = 0.42; turnSpot.range = 7;
 const coolRim = new PointLight("coolRoomRim", new Vector3(6.5, 5.2, 2.5), scene);
 coolRim.diffuse = new Color3(0.62, 0.74, 1);
 coolRim.intensity = 0.28;
@@ -489,6 +491,14 @@ function updatePotCoins() {
 const potRing = MeshBuilder.CreateTorus("potMarker", { diameter: 3.0, thickness: 0.03, tessellation: 96 }, scene);
 potRing.position.y = 0.15;
 potRing.material = brass;
+const celebrationMaterial = new StandardMaterial("potCelebrationMaterial", scene);
+celebrationMaterial.diffuseColor = new Color3(1, 0.75, 0.32);
+celebrationMaterial.emissiveColor = new Color3(1, 0.56, 0.12);
+celebrationMaterial.alpha = 0.85;
+const celebrationRing = MeshBuilder.CreateTorus("potCelebrationRing", { diameter: 3.1, thickness: 0.11, tessellation: 96 }, scene);
+celebrationRing.position.y = 0.22; celebrationRing.material = celebrationMaterial;
+celebrationRing.isVisible = false;
+let celebrationElapsed = 0;
 
 // Four understated seat markers help establish the multiplayer table layout.
 const seatPositions = [
@@ -731,6 +741,7 @@ function refreshUI() {
   $("potValue").textContent = pot;
   $("balanceValue").textContent = balances[0];
   $("activePlayer").textContent = names[turn];
+  turnSpot.position.set(seatPositions[turn].x * 0.72, 4.2, seatPositions[turn].z * 0.72);
   document.querySelector(".turn-avatar").textContent = names[turn].charAt(0);
   $("roundValue").textContent = String(round).padStart(2, "0");
   $("turnPill").textContent = gameOver ? "GAME OVER" : turn === 0 ? "YOUR TURN" : "OPPONENT TURN";
@@ -857,6 +868,19 @@ function advanceTurn() {
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   updateCoinFlights(dt);
+  if (celebrationElapsed > 0) {
+    celebrationElapsed += dt;
+    const progress = Math.min(celebrationElapsed / 1.0, 1);
+    celebrationRing.isVisible = true;
+    celebrationRing.scaling.setAll(1 + progress * 1.8);
+    celebrationMaterial.alpha = 0.85 * (1 - progress);
+    if (progress >= 1) {
+      celebrationElapsed = 0;
+      celebrationRing.isVisible = false;
+      celebrationRing.scaling.setAll(1);
+      celebrationMaterial.alpha = 0.85;
+    }
+  }
   if (!spinning) return;
   spinElapsed += dt;
   const progress = Math.min(spinElapsed / spinDuration, 1);
@@ -909,6 +933,7 @@ function settleResult() {
   } else {
     message = "No change.";
   }
+  if (resultLetter === "ג" || resultLetter === "ה") celebrationElapsed = 0.001;
   $("sceneResult").textContent = resultLetter + "  ·  " + resultNames[resultLetter];
   $("sceneResult").classList.add("show");
   addActivity(resultLetter + " — " + message);
