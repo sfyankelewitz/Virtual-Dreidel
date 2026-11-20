@@ -160,6 +160,7 @@ const darkWood = pbr("darkTableEdge", "#38251b", 0.12, 0.32);
 const brass = pbr("agedBrass", "#b88b4d", 0.82, 0.24);
 const felt = pbr("tableInlay", "#203a31", 0.02, 0.96);
 const coinMat = pbr("coinGold", "#e5b957", 0.88, 0.22);
+const coinFaceMat = pbr("coinFaceGold", "#f5d783", 0.9, 0.2);
 const darkMat = pbr("darkMetal", "#302b2a", 0.8, 0.3);
 const roomWall = pbr("warmPlaster", "#b9a48a", 0.02, 0.92);
 const wallTrim = pbr("paintedTrim", "#e2d2b8", 0.04, 0.68);
@@ -467,7 +468,7 @@ function createCoin(name) {
   const rim = MeshBuilder.CreateTorus(name + "Rim", { diameter: 0.34, thickness: 0.018, tessellation: 48 }, scene);
   rim.parent = coin; rim.position.y = 0.034; rim.material = brass;
   const medallion = MeshBuilder.CreateCylinder(name + "Medallion", { diameter: 0.24, height: 0.008, tessellation: 48 }, scene);
-  medallion.parent = coin; medallion.position.y = 0.034; medallion.material = pbr("coinFaceGold", "#f5d783", 0.9, 0.2);
+  medallion.parent = coin; medallion.position.y = 0.034; medallion.material = coinFaceMat;
   for (let ray = 0; ray < 6; ray++) {
     const mark = MeshBuilder.CreateBox(name + "MintMark", { width: 0.018, height: 0.006, depth: 0.085 }, scene);
     mark.parent = coin; mark.position.y = 0.04; mark.rotation.y = ray * Math.PI / 3; mark.material = brass;
@@ -789,19 +790,19 @@ function resetDreidel() {
 }
 
 function chooseAiBet(playerIndex) {
-  const affordable = [10, 5, 2, 1].filter(amount => amount <= balances[playerIndex]);
+  const affordable = [50, 20, 10, 5, 2, 1].filter(amount => amount <= balances[playerIndex]);
   if (!affordable.length) return 0;
   const roll = Math.random();
   let preference = 1;
   if (playerIndex === 1) {
     // Sarah is cautious and usually protects her reserve.
-    preference = roll < 0.68 ? 1 : roll < 0.94 ? 2 : 5;
+    preference = roll < 0.58 ? 1 : roll < 0.88 ? 2 : 5;
   } else if (playerIndex === 2) {
     // David takes bigger chances when he has the coins to do it.
-    preference = roll < 0.12 ? 1 : roll < 0.38 ? 2 : roll < 0.78 ? 5 : 10;
+    preference = roll < 0.1 ? 1 : roll < 0.28 ? 2 : roll < 0.56 ? 5 : roll < 0.82 ? 10 : 20;
   } else {
     // Moishe is unpredictable.
-    preference = [1, 2, 5, 10][Math.floor(Math.random() * 4)];
+    preference = [1, 2, 5, 10, 20, 50][Math.floor(Math.random() * 6)];
   }
   return affordable.find(amount => amount <= preference) || affordable[affordable.length - 1];
 }
@@ -945,6 +946,8 @@ $("fullscreen").addEventListener("click", () => {
 });
 $("newGame").addEventListener("click", () => {
   if (gameBusy) return;
+  coinFlights.forEach(flight => flight.mesh.dispose());
+  coinFlights.length = 0;
   balances = [100, 100, 100, 100];
   pot = 12; turn = 0; round = 1; bet = 1;
   gameOver = false; currentSpinPlayer = 0;
