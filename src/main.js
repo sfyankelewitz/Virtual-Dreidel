@@ -28,6 +28,8 @@ scene.collisionsEnabled = false;
 camera.wheelPrecision = 65;
 camera.panningSensibility = 0;
 camera.inertia = 0.72;
+let desiredCameraRadius = camera.radius;
+let returnCameraRadius = camera.radius;
 
 const hemi = new HemisphericLight("ambient", new Vector3(0, 1, 0), scene);
 hemi.intensity = 0.82;
@@ -958,6 +960,8 @@ function chooseAiBet(playerIndex) {
 function beginSpin(playerIndex, wager) {
   if (gameBusy || gameOver || wager < 1 || balances[playerIndex] < wager) return;
   currentSpinPlayer = playerIndex;
+  returnCameraRadius = camera.radius;
+  desiredCameraRadius = 15.2;
   gameBusy = true;
   balances[playerIndex] -= wager;
   pot += wager;
@@ -1012,6 +1016,7 @@ function advanceTurn() {
 let roomFlickerTime = 0;
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+  camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
   roomFlickerTime += dt;
   menorahFlames.forEach((flame, i) => {
     const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
@@ -1072,6 +1077,7 @@ scene.onBeforeRenderObservable.add(() => {
 });
 
 function settleResult() {
+  desiredCameraRadius = returnCameraRadius;
   const playerIndex = currentSpinPlayer;
   let message = "";
   if (resultLetter === "ג") {
@@ -1145,13 +1151,13 @@ $("soundToggle").addEventListener("click", () => {
 function setCameraPreset(mode) {
   if (mode === "table") {
     camera.setTarget(new Vector3(0, 0.45, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 0.98; camera.radius = 15.2;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 0.98; desiredCameraRadius = 15.2;
   } else if (mode === "room") {
     camera.setTarget(new Vector3(0, 0.8, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 16.4;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; desiredCameraRadius = 16.4;
   } else {
     camera.setTarget(new Vector3(0, 0.8, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.24; camera.radius = 19.2;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.24; desiredCameraRadius = 19.2;
   }
 }
 $("resetCamera").addEventListener("click", () => setCameraPreset("room"));
