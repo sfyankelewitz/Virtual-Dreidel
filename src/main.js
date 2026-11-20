@@ -148,9 +148,7 @@ tableMat.metallic = 0.08;
 tableMat.clearCoat.isEnabled = true;
 tableMat.clearCoat.intensity = 0.32;
 tableMat.clearCoat.roughness = 0.28;
-bodyMat.clearCoat.isEnabled = true;
-bodyMat.clearCoat.intensity = 0.24;
-bodyMat.clearCoat.roughness = 0.3;
+
 
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
 const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
@@ -557,6 +555,9 @@ dreidelRoot.scaling.setAll(1.78);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
 const dreidelWoodTexture = woodTexture();
 bodyMat.albedoTexture = dreidelWoodTexture;
+bodyMat.clearCoat.isEnabled = true;
+bodyMat.clearCoat.intensity = 0.24;
+bodyMat.clearCoat.roughness = 0.3;
 let selectedFinish = "walnut";
 function setDreidelFinish(finish) {
   selectedFinish = finish;
