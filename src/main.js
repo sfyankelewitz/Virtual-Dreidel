@@ -11,7 +11,7 @@ const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: 
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
-scene.environmentIntensity = 0.8;
+scene.environmentIntensity = 1.05;
 
 const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 16.4, new Vector3(0, 0.8, 0), scene);
 camera.attachControl(canvas, true);
@@ -55,15 +55,15 @@ fill.diffuse = new Color3(0.65, 0.76, 1);
 
 const shadows = new ShadowGenerator(2048, key);
 shadows.useBlurExponentialShadowMap = true;
-shadows.blurKernel = 32;
-shadows.setDarkness(0.27);
+shadows.blurKernel = 24;
+shadows.setDarkness(0.36);
 shadows.bias = 0.0005;
 shadows.normalBias = 0.025;
 scene.imageProcessingConfiguration.toneMappingEnabled = true;
-scene.imageProcessingConfiguration.exposure = 1.15;
-scene.imageProcessingConfiguration.contrast = 1.15;
+scene.imageProcessingConfiguration.exposure = 1.08;
+scene.imageProcessingConfiguration.contrast = 1.22;
 const glow = new GlowLayer("subtleGlow", scene);
-glow.intensity = 0.12;
+glow.intensity = 0.08;
 scene.ambientColor = new Color3(0.16, 0.14, 0.12);
 
 function pbr(name, color, metallic = 0, roughness = 0.55) {
