@@ -306,13 +306,34 @@ const seatPositions = [
   new Vector3(0, 0.15, 4.55), new Vector3(-4.55, 0.15, 0)
 ];
 const seatMaterials = ["#b98b4d", "#bb8291", "#789bbd", "#82a78d"].map((c, i) => pbr("seat" + i, c, 0.25, 0.4));
+const seatMarkers = [];
+const seatNameTextures = [];
 seatPositions.forEach((pos, i) => {
   const disc = MeshBuilder.CreateCylinder("playerSeatMarker", { diameter: 1.0, height: 0.045, tessellation: 48 }, scene);
   disc.position.copyFrom(pos);
   disc.material = seatMaterials[i];
+  seatMarkers.push(disc);
   const inner = MeshBuilder.CreateTorus("seatRing", { diameter: 1.08, thickness: 0.035, tessellation: 48 }, scene);
   inner.position.set(pos.x, 0.19, pos.z);
   inner.material = brass;
+
+  const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.65, height: 0.055, depth: 0.42 }, scene);
+  plaque.position.set(pos.x * 0.82, 0.205, pos.z * 0.82);
+  plaque.material = darkWood;
+  const texture = new DynamicTexture("playerNameTexture" + i, { width: 512, height: 128 }, scene, true);
+  const ctx = texture.getContext();
+  ctx.fillStyle = "#2b2119"; ctx.fillRect(0, 0, 512, 128);
+  ctx.strokeStyle = "#c39a5e"; ctx.lineWidth = 7; ctx.strokeRect(5, 5, 502, 118);
+  ctx.fillStyle = "#f3dfb9"; ctx.font = "bold 58px Georgia, serif";
+  ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(["YOU", "SARAH", "DAVID", "MOISHE"][i], 256, 66);
+  texture.update();
+  const label = MeshBuilder.CreatePlane("playerNameLabel" + i, { width: 1.58, height: 0.34, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
+  label.position.set(pos.x * 0.82, 0.239, pos.z * 0.82);
+  label.rotation.x = Math.PI / 2;
+  const labelMat = new StandardMaterial("playerNameLabelMat" + i, scene);
+  labelMat.diffuseTexture = texture; labelMat.emissiveColor = new Color3(0.25, 0.2, 0.13);
+  labelMat.backFaceCulling = false; label.material = labelMat;
+  seatNameTextures.push({ texture, ctx });
 });
 
 // Each player's reserve is visible as a little stack of coins at their seat.
@@ -496,6 +517,17 @@ function refreshUI() {
   });
   updatePotCoins();
   updatePlayerCoinStacks();
+  seatNameTextures.forEach(({ texture, ctx }, i) => {
+    ctx.clearRect(0, 0, 512, 128);
+    ctx.fillStyle = "#2b2119"; ctx.fillRect(0, 0, 512, 128);
+    ctx.strokeStyle = i === turn && !gameOver ? "#f2c879" : "#c39a5e";
+    ctx.lineWidth = i === turn && !gameOver ? 12 : 7; ctx.strokeRect(5, 5, 502, 118);
+    ctx.fillStyle = i === turn && !gameOver ? "#fff0c9" : "#f3dfb9";
+    ctx.font = "bold 58px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(names[i].toUpperCase(), 256, 66);
+    texture.update();
+    seatMarkers[i].material.emissiveColor = i === turn && !gameOver ? new Color3(0.18, 0.1, 0.025) : new Color3(0, 0, 0);
+  });
 }
 
 function addActivity(message) {
