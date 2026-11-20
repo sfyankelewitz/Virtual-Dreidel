@@ -205,6 +205,11 @@ windowCrossbar.position.set(14.25, 4.25, 0.4); windowCrossbar.material = brass;
 for (const z of [-3.0, 3.8]) {
   const curtain = MeshBuilder.CreateBox("windowCurtain", { width: 0.34, height: 4.9, depth: 0.85 }, scene);
   curtain.position.set(14.18, 4.2, z); curtain.material = curtainMat;
+  for (let fold = 0; fold < 7; fold++) {
+    const pleat = MeshBuilder.CreateBox("curtainPleat", { width: 0.37, height: 4.75, depth: 0.045 }, scene);
+    pleat.position.set(13.98, 4.2, z - 0.34 + fold * 0.11);
+    pleat.material = curtainMat;
+  }
 }
 for (const x of [-13.7, 13.7]) {
   const trim = MeshBuilder.CreateBox("wallBaseboard", { width: 0.16, height: 0.38, depth: 23.5 }, scene);
@@ -212,6 +217,10 @@ for (const x of [-13.7, 13.7]) {
 }
 const backBaseboard = MeshBuilder.CreateBox("backWallBaseboard", { width: 29, height: 0.38, depth: 0.16 }, scene);
 backBaseboard.position.set(0, -1.48, 11.55); backBaseboard.material = wallTrim;
+for (const y of [ -1.24, -1.08 ]) {
+  const wallMoulding = MeshBuilder.CreateBox("backWallMoulding", { width: 29, height: 0.045, depth: 0.09 }, scene);
+  wallMoulding.position.set(0, y, 11.42); wallMoulding.material = brass;
+}
 
 // A walnut console and a nine-branch brass menorah bring a warm Chanukah
 // detail into the living room, behind the sofa.
@@ -264,6 +273,10 @@ const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, d
 sofaBase.position.set(0, -1.28, 8.9); sofaBase.material = upholstery;
 const sofaBack = MeshBuilder.CreateBox("sofaBack", { width: 7.5, height: 1.8, depth: 0.62 }, scene);
 sofaBack.position.set(0, -0.58, 9.48); sofaBack.material = upholstery;
+for (const x of [-2.85, -1.42, 0, 1.42, 2.85]) {
+  const backSeam = MeshBuilder.CreateBox("sofaBackSeam", { width: 0.018, height: 1.45, depth: 0.018 }, scene);
+  backSeam.position.set(x, -0.55, 9.16); backSeam.material = upholsteryLight;
+}
 for (const x of [-3.65, 3.65]) {
   const arm = MeshBuilder.CreateBox("sofaArm", { width: 0.58, height: 1.25, depth: 1.75 }, scene);
   arm.position.set(x, -1.12, 8.9); arm.material = upholstery;
@@ -271,6 +284,8 @@ for (const x of [-3.65, 3.65]) {
 for (const x of [-2.45, -0.85, 0.85, 2.45]) {
   const cushion = MeshBuilder.CreateBox("sofaCushion", { width: 1.48, height: 0.2, depth: 1.25 }, scene);
   cushion.position.set(x, -0.87, 8.55); cushion.material = upholsteryLight;
+  const piping = MeshBuilder.CreateBox("sofaCushionPiping", { width: 1.42, height: 0.025, depth: 0.025 }, scene);
+  piping.position.set(x, -0.75, 7.94); piping.material = creamMat;
 }
 // Soft accent pillows make the sofa feel lived-in.
 for (const [x, color] of [[-2.65, "#b58b68"], [2.65, "#9b7964"]]) {
@@ -304,6 +319,11 @@ function makeArmchair(x, z, angle) {
 makeArmchair(0, -9.0, 0);
 makeArmchair(-8.0, 0, Math.PI / 2);
 makeArmchair(8.0, 0, -Math.PI / 2);
+// Soft seat pads and small brass feet add depth to the armchairs.
+for (const [x, z] of [[0, -9.0], [-8.0, 0], [8.0, 0]]) {
+  const seatPad = MeshBuilder.CreateBox("armchairSeatPad", { width: 1.72, height: 0.12, depth: 1.35 }, scene);
+  seatPad.position.set(x, -0.65, z); seatPad.material = upholsteryLight;
+}
 const rugTexture = new DynamicTexture("wovenRugTexture", { width: 512, height: 512 }, scene, false);
 const rugCtx = rugTexture.getContext();
 rugCtx.fillStyle = "#6d5142"; rugCtx.fillRect(0, 0, 512, 512);
@@ -356,6 +376,10 @@ tableTop.material = tableMat;
 tableTop.receiveShadows = true;
 const outerEdgeTrim = MeshBuilder.CreateTorus("tableOuterBrassEdge", { diameter: 12.82, thickness: 0.045, tessellation: 128 }, scene);
 outerEdgeTrim.position.y = -0.005; outerEdgeTrim.material = brass;
+for (const [diameter, thickness, y] of [[12.76, 0.035, -0.12], [12.55, 0.025, -0.36]]) {
+  const edgeBead = MeshBuilder.CreateTorus("walnutTableEdgeBead", { diameter, thickness, tessellation: 128 }, scene);
+  edgeBead.position.y = y; edgeBead.material = brass;
+}
 const tableRivetRadius = 6.02;
 for (let i = 0; i < 48; i++) {
   const angle = (i / 48) * Math.PI * 2;
@@ -604,6 +628,12 @@ const stemCap = MeshBuilder.CreateSphere("handleCap", { diameter: 0.25, segments
 stemCap.parent = dreidelRoot; stemCap.position.y = 2.17; stemCap.material = brass;
 const tip = MeshBuilder.CreateCylinder("dreidelPoint", { height: 0.32, diameterTop: 0.24, diameterBottom: 0.025, tessellation: 4 }, scene);
 tip.parent = dreidelRoot; tip.position.y = 0.18; tip.rotation.y = Math.PI / 4; tip.material = brass;
+for (const x of [-0.29, 0.29]) for (const z of [-0.29, 0.29]) {
+  const cornerInlay = MeshBuilder.CreateCylinder("dreidelCornerInlay", { height: 1.0, diameterTop: 0.018, diameterBottom: 0.045, tessellation: 12 }, scene);
+  cornerInlay.parent = dreidelRoot; cornerInlay.position.set(x, 1.0, z); cornerInlay.material = brass;
+}
+const handleCollar = MeshBuilder.CreateTorus("dreidelHandleCollar", { diameter: 0.29, thickness: 0.035, tessellation: 32 }, scene);
+handleCollar.parent = dreidelRoot; handleCollar.position.y = 1.78; handleCollar.material = brass;
 
 const faceLetters = ["נ", "ג", "ה", "ש"];
 const faceRotations = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
