@@ -779,8 +779,8 @@ const handleGrip = MeshBuilder.CreateSphere("dreidelHandleGrip", { diameter: 0.3
 handleGrip.parent = dreidelRoot; handleGrip.position.y = 2.02; handleGrip.scaling.y = 0.72; handleGrip.material = bodyMat;
 const stemCap = MeshBuilder.CreateSphere("handleCap", { diameter: 0.25, segments: 24 }, scene);
 stemCap.parent = dreidelRoot; stemCap.position.y = 2.17; stemCap.material = brass;
-const tip = MeshBuilder.CreateCylinder("dreidelPoint", { height: 0.32, diameterTop: 0.24, diameterBottom: 0.025, tessellation: 4 }, scene);
-tip.parent = dreidelRoot; tip.position.y = 0.18; tip.rotation.y = Math.PI / 4; tip.material = brass;
+const tip = MeshBuilder.CreateCylinder("dreidelPoint", { height: 0.42, diameterTop: 0.24, diameterBottom: 0.025, tessellation: 4 }, scene);
+tip.parent = dreidelRoot; tip.position.y = 0.22; tip.rotation.y = Math.PI / 4; tip.material = brass;
 for (const x of [-0.29, 0.29]) for (const z of [-0.29, 0.29]) {
   const cornerInlay = MeshBuilder.CreateCylinder("dreidelCornerInlay", { height: 1.0, diameterTop: 0.018, diameterBottom: 0.045, tessellation: 12 }, scene);
   cornerInlay.parent = dreidelRoot; cornerInlay.position.set(x, 1.0, z); cornerInlay.material = brass;
