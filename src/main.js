@@ -104,6 +104,30 @@ const backWall = MeshBuilder.CreateBox("livingRoomBackWall", { width: 30, height
 backWall.position.set(0, 4.2, 11.8); backWall.material = roomWall;
 const leftWall = MeshBuilder.CreateBox("livingRoomLeftWall", { width: 0.35, height: 12, depth: 24 }, scene);
 leftWall.position.set(-14.8, 4.2, 0); leftWall.material = roomWall;
+
+// A built-in walnut bookcase adds lived-in detail to the side of the room.
+const bookcaseBack = MeshBuilder.CreateBox("bookcaseBack", { width: 0.22, height: 5.8, depth: 6.5 }, scene);
+bookcaseBack.position.set(-14.48, 1.18, 0.6); bookcaseBack.material = cabinetMat;
+for (const z of [-2.55, 3.75]) {
+  const post = MeshBuilder.CreateBox("bookcaseSide", { width: 0.72, height: 5.9, depth: 0.24 }, scene);
+  post.position.set(-14.05, 1.18, z); post.material = darkWood;
+}
+const shelfLevels = [-1.45, -0.12, 1.21, 2.54, 3.87];
+for (const y of shelfLevels) {
+  const shelf = MeshBuilder.CreateBox("bookcaseShelf", { width: 0.82, height: 0.15, depth: 6.45 }, scene);
+  shelf.position.set(-14.04, y, 0.6); shelf.material = darkWood;
+}
+const bookColors = ["#6d3028", "#31483f", "#283d55", "#8b673d", "#5a3c62", "#9a7b4e", "#3e4845"];
+shelfLevels.slice(0, 4).forEach((y, row) => {
+  for (let i = 0; i < 13; i++) {
+    const h = 0.72 + ((i * 7 + row * 3) % 5) * 0.055;
+    const book = MeshBuilder.CreateBox("libraryBook", { width: 0.25, height: h, depth: 0.27 }, scene);
+    book.position.set(-13.68, y + 0.075 + h / 2, -2.25 + i * 0.47);
+    book.rotation.x = (i % 4 === 0 ? -0.035 : 0.015);
+    book.material = pbr("bookSpine" + row + "-" + i, bookColors[(i + row) % bookColors.length], 0.02, 0.78);
+  }
+}
+
 const rightWall = MeshBuilder.CreateBox("livingRoomRightWall", { width: 0.35, height: 12, depth: 24 }, scene);
 rightWall.position.set(14.8, 4.2, 0); rightWall.material = roomWall;
 
@@ -184,6 +208,15 @@ makeArmchair(-8.0, 0, -Math.PI / 2);
 makeArmchair(8.0, 0, Math.PI / 2);
 const rug = MeshBuilder.CreateBox("livingRoomRug", { width: 17, height: 0.08, depth: 13 }, scene);
 rug.position.set(0, -1.64, -0.1); rug.material = rugMat;
+const rugBorderMat = pbr("rugBorder", "#a88a63", 0.02, 0.9);
+for (const x of [-8.35, 8.35]) {
+  const border = MeshBuilder.CreateBox("rugBorder", { width: 0.08, height: 0.025, depth: 12.45 }, scene);
+  border.position.set(x, -1.585, -0.1); border.material = rugBorderMat;
+}
+for (const z of [-6.25, 6.05]) {
+  const border = MeshBuilder.CreateBox("rugBorder", { width: 16.7, height: 0.025, depth: 0.08 }, scene);
+  border.position.set(0, -1.585, z); border.material = rugBorderMat;
+}
 
 // A pair of side tables and lamps add warm residential scale to the background.
 for (const x of [-8.0, 8.0]) {
