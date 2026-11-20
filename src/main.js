@@ -567,7 +567,8 @@ function refreshUI() {
   document.querySelectorAll(".player-row").forEach((row, i) => {
     row.classList.toggle("active", i === turn && !gameOver);
     row.querySelector("small").textContent = balances[i] <= 0 ? "Out of coins" :
-      i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") : "Ready";
+      i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") :
+      ["Your seat", "Careful player", "Bold player", "Wildcard"][i];
   });
   document.querySelectorAll(".finish-option").forEach(button => {
     button.classList.toggle("active", button.dataset.finish === selectedFinish);
@@ -614,7 +615,17 @@ function chooseAiBet(playerIndex) {
   const affordable = [10, 5, 2, 1].filter(amount => amount <= balances[playerIndex]);
   if (!affordable.length) return 0;
   const roll = Math.random();
-  const preference = roll < 0.12 ? 10 : roll < 0.34 ? 5 : roll < 0.68 ? 2 : 1;
+  let preference = 1;
+  if (playerIndex === 1) {
+    // Sarah is cautious and usually protects her reserve.
+    preference = roll < 0.68 ? 1 : roll < 0.94 ? 2 : 5;
+  } else if (playerIndex === 2) {
+    // David takes bigger chances when he has the coins to do it.
+    preference = roll < 0.12 ? 1 : roll < 0.38 ? 2 : roll < 0.78 ? 5 : 10;
+  } else {
+    // Moishe is unpredictable.
+    preference = [1, 2, 5, 10][Math.floor(Math.random() * 4)];
+  }
   return affordable.find(amount => amount <= preference) || affordable[affordable.length - 1];
 }
 
@@ -709,8 +720,14 @@ function settleResult() {
     pot -= take;
     message = names[playerIndex] + " collected " + take + " coins.";
   } else if (resultLetter === "ש") {
-    pot += 1;
-    message = "One extra coin goes into the pot.";
+    if (balances[playerIndex] > 0) {
+      balances[playerIndex] -= 1;
+      pot += 1;
+      animateCoinTransfer(playerIndex, null, 1);
+      message = names[playerIndex] + " added one coin to the pot.";
+    } else {
+      message = names[playerIndex] + " has no coin left to add.";
+    }
   } else {
     message = "No change.";
   }
