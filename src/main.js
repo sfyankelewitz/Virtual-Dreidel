@@ -1,6 +1,7 @@
 import "./style.css";
 import "@babylonjs/loaders/glTF";
 import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
+import { HDRCubeTexture } from "@babylonjs/core/Materials/Textures/hdrCubeTexture";
 import {
   Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4,
   HemisphericLight, DirectionalLight, PointLight, MeshBuilder, PBRMaterial,
@@ -13,7 +14,26 @@ const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: 
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
-scene.environmentIntensity = 1.22;
+scene.environmentIntensity = 1.0;
+
+// Replace the generic studio reflections with a real warm living-room HDRI.
+// The compact 1K CC0 panorama gives the walnut, brass and polished wood a
+// coherent photographic reflection source. The Babylon studio map remains
+// active until the HDR file finishes loading, and remains the fallback on error.
+try {
+  const warmRoomHDR = new HDRCubeTexture(
+    "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/lebombo/lebombo_1k.hdr",
+    scene, 256, false, true, false, true,
+    () => {
+      scene.environmentTexture = warmRoomHDR;
+      scene.environmentIntensity = 0.72;
+      console.info("Virtual Dreidel: warm Poly Haven room HDRI loaded (CC0).");
+    },
+    (message, error) => console.warn("Virtual Dreidel: using studio reflections; room HDRI unavailable.", message, error)
+  );
+} catch (error) {
+  console.warn("Virtual Dreidel: using studio reflections; room HDRI could not be initialized.", error);
+}
 
 const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 16.4, new Vector3(0, 0.8, 0), scene);
 camera.attachControl(canvas, true);
