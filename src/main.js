@@ -231,7 +231,31 @@ rightWall.checkCollisions = true; rightWall.isPickable = false;
 const windowFrame = MeshBuilder.CreateBox("livingRoomWindowFrame", { width: 0.2, height: 4.5, depth: 6.4 }, scene);
 windowFrame.position.set(14.48, 4.25, 0.4); windowFrame.material = cabinetMat;
 const windowPane = MeshBuilder.CreateBox("livingRoomWindowPane", { width: 0.08, height: 4.15, depth: 6.05 }, scene);
-windowPane.position.set(14.34, 4.25, 0.4); windowPane.material = windowGlass;
+windowPane.position.set(14.34, 4.25, 0.4);
+const nightTexture = new DynamicTexture("eveningWindowView", { width: 512, height: 512 }, scene, false);
+const nightCtx = nightTexture.getContext();
+const nightGradient = nightCtx.createLinearGradient(0, 0, 0, 512);
+nightGradient.addColorStop(0, "#192c46"); nightGradient.addColorStop(1, "#b47a58");
+nightCtx.fillStyle = nightGradient; nightCtx.fillRect(0, 0, 512, 512);
+nightCtx.fillStyle = "#f2d6a2"; nightCtx.beginPath(); nightCtx.arc(380, 112, 36, 0, Math.PI * 2); nightCtx.fill();
+for (let i = 0; i < 70; i++) {
+  nightCtx.fillStyle = "rgba(255,238,200,.7)";
+  nightCtx.fillRect((i * 83) % 512, (i * 137) % 290, 2, 2);
+}
+nightCtx.fillStyle = "#202a35";
+for (let i = 0; i < 15; i++) {
+  const x = i * 38 - 10, h = 65 + (i * 47) % 110;
+  nightCtx.fillRect(x, 512 - h, 28, h);
+  nightCtx.fillStyle = "#d8a96d";
+  for (let y = 512 - h + 12; y < 500; y += 18) nightCtx.fillRect(x + 7, y, 4, 5);
+  nightCtx.fillStyle = "#202a35";
+}
+nightTexture.update();
+const windowViewMat = pbr("nightWindowView", "#ffffff", 0.02, 0.4);
+windowViewMat.albedoTexture = nightTexture;
+windowViewMat.emissiveTexture = nightTexture;
+windowViewMat.emissiveColor = new Color3(0.32, 0.3, 0.28);
+windowPane.material = windowViewMat;
 for (const z of [-1.55, 0.4, 2.35]) {
   const mullion = MeshBuilder.CreateBox("windowMullion", { width: 0.1, height: 4.1, depth: 0.11 }, scene);
   mullion.position.set(14.25, 4.25, z); mullion.material = brass;
@@ -276,6 +300,7 @@ const menorahCandleWax = pbr("menorahIvoryWax", "#f0dfbd", 0.0, 0.72);
 const flameMat = new StandardMaterial("menorahFlameMaterial", scene);
 flameMat.diffuseColor = new Color3(1, 0.42, 0.08);
 flameMat.emissiveColor = new Color3(1, 0.28, 0.035);
+const menorahFlames = [];
 const menorahOffsets = [-1.45, -1.08, -0.72, -0.36, 0, 0.36, 0.72, 1.08, 1.45];
 menorahOffsets.forEach((offset, index) => {
   const height = index === 4 ? 1.38 : 0.72 + (1 - Math.abs(offset) / 1.45) * 0.18;
@@ -291,6 +316,7 @@ menorahOffsets.forEach((offset, index) => {
   candle.position.set(offset, height + 0.13, 10.5); candle.material = menorahCandleWax;
   const flame = MeshBuilder.CreateSphere("menorahFlame", { diameter: 0.13, segments: 16 }, scene);
   flame.position.set(offset, height + 0.37, 10.5); flame.scaling.y = 1.45; flame.material = flameMat;
+  menorahFlames.push(flame);
 });
 const menorahGlow = new PointLight("menorahWarmGlow", new Vector3(0, 1.15, 10.25), scene);
 menorahGlow.diffuse = new Color3(1, 0.46, 0.16); menorahGlow.intensity = 0.75; menorahGlow.range = 8;
@@ -300,7 +326,19 @@ menorahGlow.diffuse = new Color3(1, 0.46, 0.16); menorahGlow.intensity = 0.75; m
 const artFrame = MeshBuilder.CreateBox("wallArtFrame", { width: 4.2, height: 2.8, depth: 0.16 }, scene);
 artFrame.position.set(0, 4.25, 11.48); artFrame.material = brass;
 const artCanvas = MeshBuilder.CreateBox("wallArtCanvas", { width: 3.9, height: 2.5, depth: 0.08 }, scene);
-artCanvas.position.set(0, 4.25, 11.36); artCanvas.material = pbr("artCanvas", "#31433f", 0.0, 0.95);
+artCanvas.position.set(0, 4.25, 11.36);
+const artTexture = new DynamicTexture("livingRoomLandscapeArt", { width: 768, height: 512 }, scene, false);
+const artCtx = artTexture.getContext();
+const artGradient = artCtx.createLinearGradient(0, 0, 0, 512);
+artGradient.addColorStop(0, "#344b50"); artGradient.addColorStop(0.58, "#b47f5b"); artGradient.addColorStop(1, "#273d37");
+artCtx.fillStyle = artGradient; artCtx.fillRect(0, 0, 768, 512);
+artCtx.fillStyle = "#e5bd83"; artCtx.beginPath(); artCtx.arc(555, 150, 62, 0, Math.PI * 2); artCtx.fill();
+artCtx.fillStyle = "#293c3a"; artCtx.beginPath(); artCtx.moveTo(0, 380); artCtx.lineTo(180, 190); artCtx.lineTo(340, 380); artCtx.lineTo(500, 220); artCtx.lineTo(768, 410); artCtx.lineTo(768, 512); artCtx.lineTo(0, 512); artCtx.fill();
+artCtx.fillStyle = "#6b6a4f"; artCtx.beginPath(); artCtx.moveTo(0, 430); artCtx.lineTo(230, 300); artCtx.lineTo(420, 430); artCtx.lineTo(620, 315); artCtx.lineTo(768, 430); artCtx.lineTo(768, 512); artCtx.lineTo(0, 512); artCtx.fill();
+artTexture.update();
+const artMaterial = pbr("artCanvasMaterial", "#ffffff", 0, 0.9);
+artMaterial.albedoTexture = artTexture;
+artCanvas.material = artMaterial;
 const artSun = MeshBuilder.CreateDisc("artSun", { radius: 0.72, tessellation: 64 }, scene);
 artSun.position.set(0, 4.35, 11.29); artSun.rotation.y = Math.PI; artSun.material = brass;
 
@@ -880,8 +918,14 @@ function advanceTurn() {
   if (!gameOver && turn !== 0) scheduleAiTurn();
 }
 
+let roomFlickerTime = 0;
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+  roomFlickerTime += dt;
+  menorahFlames.forEach((flame, i) => {
+    const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
+    flame.scaling.set(0.82 * flicker, 1.45 * flicker, 0.82 * flicker);
+  });
   updateCoinFlights(dt);
   if (celebrationElapsed > 0) {
     celebrationElapsed += dt;
