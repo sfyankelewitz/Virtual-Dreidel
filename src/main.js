@@ -13,7 +13,7 @@ const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: 
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
-scene.environmentIntensity = 1.05;
+scene.environmentIntensity = 1.22;
 
 const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 16.4, new Vector3(0, 0.8, 0), scene);
 camera.attachControl(canvas, true);
@@ -59,7 +59,9 @@ fill.diffuse = new Color3(0.65, 0.76, 1);
 
 const shadows = new ShadowGenerator(2048, key);
 shadows.useBlurExponentialShadowMap = true;
-shadows.blurKernel = 24;
+shadows.blurKernel = 32;
+shadows.usePercentageCloserFiltering = true;
+shadows.filteringQuality = ShadowGenerator.QUALITY_HIGH;
 shadows.setDarkness(0.36);
 shadows.bias = 0.0005;
 shadows.normalBias = 0.025;
@@ -78,7 +80,7 @@ renderPipeline.fxaaEnabled = true;
 renderPipeline.imageProcessingEnabled = true;
 renderPipeline.bloomEnabled = true;
 renderPipeline.bloomThreshold = 0.92;
-renderPipeline.bloomWeight = 0.12;
+renderPipeline.bloomWeight = 0.095;
 renderPipeline.bloomKernel = 48;
 renderPipeline.bloomScale = 0.5;
 
@@ -92,6 +94,65 @@ function pbr(name, color, metallic = 0, roughness = 0.55) {
   mat.metallic = metallic;
   mat.roughness = roughness;
   return mat;
+}
+
+
+// High-frequency surface detail. These grayscale maps feed the PBR normal
+// channel so light catches grain, woven fibers and tiny plaster irregularities
+// instead of leaving every object looking like smooth colored plastic.
+function microSurfaceTexture(name, style = "wood", size = 512) {
+  const tex = new DynamicTexture(name, { width: size, height: size }, scene, false);
+  const ctx = tex.getContext();
+  ctx.fillStyle = "#808080";
+  ctx.fillRect(0, 0, size, size);
+  if (style === "wood") {
+    for (let i = 0; i < 420; i++) {
+      const y = Math.random() * size;
+      const amplitude = 1 + Math.random() * 4;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      for (let x = 0; x <= size; x += 12) {
+        ctx.lineTo(x, y + Math.sin(x / (18 + Math.random() * 10) + i) * amplitude);
+      }
+      ctx.strokeStyle = i % 5 ? "rgba(35,25,18,.24)" : "rgba(245,220,185,.28)";
+      ctx.lineWidth = 1 + Math.random() * 2;
+      ctx.stroke();
+    }
+    for (let i = 0; i < 36; i++) {
+      const x = Math.random() * size, y = Math.random() * size;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 12 + Math.random() * 30, 3 + Math.random() * 7, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(35,22,12,.24)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  } else if (style === "fabric") {
+    for (let i = 0; i < size; i += 3) {
+      ctx.strokeStyle = i % 6 ? "rgba(35,35,35,.22)" : "rgba(245,245,245,.28)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(size, i); ctx.stroke();
+    }
+    for (let i = 0; i < 5200; i++) {
+      const v = Math.random() > .5 ? 255 : 30;
+      ctx.fillStyle = "rgba(" + v + "," + v + "," + v + ",.12)";
+      ctx.fillRect(Math.random() * size, Math.random() * size, 1.2, 1.2);
+    }
+  } else if (style === "stone") {
+    for (let i = 0; i < 14000; i++) {
+      const v = Math.random() > .5 ? 245 : 28;
+      ctx.fillStyle = "rgba(" + v + "," + v + "," + v + ",.13)";
+      const r = 1 + Math.random() * 3;
+      ctx.fillRect(Math.random() * size, Math.random() * size, r, r);
+    }
+  }
+  tex.update();
+  tex.wrapU = Texture.WRAP_ADDRESSMODE;
+  tex.wrapV = Texture.WRAP_ADDRESSMODE;
+  tex.uScale = 2.5;
+  tex.vScale = 2.5;
+  tex.anisotropicFilteringLevel = 8;
+  return tex;
 }
 
 function wovenTexture(name, base, thread, spacing = 8) {
@@ -178,10 +239,24 @@ function woodTexture() {
 
 const tableMat = pbr("walnutTable", "#805536", 0.05, 0.36);
 tableMat.albedoTexture = woodTexture();
+tableMat.bumpTexture = microSurfaceTexture("walnutTableNormal", "wood");
+tableMat.bumpTexture.level = 0.22;
+tableMat.clearCoat.isEnabled = true;
+tableMat.clearCoat.intensity = 0.48;
+tableMat.clearCoat.roughness = 0.24;
 const darkWood = pbr("darkTableEdge", "#38251b", 0.12, 0.32);
-const brass = pbr("agedBrass", "#b88b4d", 0.82, 0.24);
+darkWood.bumpTexture = microSurfaceTexture("darkWalnutNormal", "wood");
+darkWood.bumpTexture.level = 0.18;
+darkWood.clearCoat.isEnabled = true;
+darkWood.clearCoat.intensity = 0.28;
+darkWood.clearCoat.roughness = 0.3;
+const brass = pbr("agedBrass", "#b88b4d", 0.88, 0.2);
+brass.bumpTexture = microSurfaceTexture("brushedBrassNormal", "wood");
+brass.bumpTexture.level = 0.055;
 const felt = pbr("tableInlay", "#203a31", 0.02, 0.96);
  felt.albedoTexture = wovenTexture("tableFeltTexture", "#203a31", "rgba(190,210,185,.075)", 5);
+felt.bumpTexture = microSurfaceTexture("tableFeltNormal", "fabric");
+felt.bumpTexture.level = 0.16;
 const coinMat = pbr("coinGold", "#e5b957", 0.88, 0.22);
 const coinFaceMat = pbr("coinFaceGold", "#f5d783", 0.9, 0.2);
 const coinMintTexture = new DynamicTexture("coinMintStamp", { width: 256, height: 256 }, scene, true);
@@ -207,9 +282,17 @@ const creamMat = pbr("lampLinen", "#e9d7b5", 0.0, 0.9);
 const windowGlass = pbr("eveningWindowGlass", "#536c78", 0.22, 0.22);
 const curtainMat = pbr("heavyCurtain", "#8a6b55", 0.0, 0.96);
 roomWall.albedoTexture = plasterTexture();
+roomWall.bumpTexture = microSurfaceTexture("plasterNormal", "stone");
+roomWall.bumpTexture.level = 0.09;
 upholstery.albedoTexture = wovenTexture("oliveVelvetWeave", "#536052", "rgba(220,225,200,.06)", 5);
+upholstery.bumpTexture = microSurfaceTexture("velvetNormal", "fabric");
+upholstery.bumpTexture.level = 0.22;
 upholsteryLight.albedoTexture = wovenTexture("cushionWeave", "#78816d", "rgba(245,240,215,.08)", 6);
+upholsteryLight.bumpTexture = microSurfaceTexture("cushionNormal", "fabric");
+upholsteryLight.bumpTexture.level = 0.18;
 curtainMat.albedoTexture = wovenTexture("curtainLinenWeave", "#8a6b55", "rgba(235,205,170,.08)", 7);
+curtainMat.bumpTexture = microSurfaceTexture("linenNormal", "fabric");
+curtainMat.bumpTexture.level = 0.24;
 tableMat.roughness = 0.3;
 tableMat.metallic = 0.08;
 tableMat.clearCoat.isEnabled = true;
@@ -242,6 +325,8 @@ const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, heigh
 roomFloor.position.set(0, -1.72, 0);
 const roomFloorMat = pbr("roomFloorMat", "#76563d", 0.02, 0.58);
 roomFloorMat.albedoTexture = hardwoodTexture();
+roomFloorMat.bumpTexture = microSurfaceTexture("floorOakNormal", "wood");
+roomFloorMat.bumpTexture.level = 0.14;
 roomFloor.material = roomFloorMat;
 roomFloor.receiveShadows = true;
 roomFloor.checkCollisions = true;
@@ -734,6 +819,11 @@ dreidelRoot.scaling.setAll(1.98);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
 const dreidelWoodTexture = woodTexture();
 bodyMat.albedoTexture = dreidelWoodTexture;
+bodyMat.bumpTexture = microSurfaceTexture("dreidelHandTurnedWoodNormal", "wood");
+bodyMat.bumpTexture.level = 0.2;
+bodyMat.clearCoat.isEnabled = true;
+bodyMat.clearCoat.intensity = 0.5;
+bodyMat.clearCoat.roughness = 0.22;
 bodyMat.clearCoat.isEnabled = true;
 bodyMat.clearCoat.intensity = 0.24;
 bodyMat.clearCoat.roughness = 0.3;
