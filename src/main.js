@@ -992,7 +992,12 @@ function advanceTurn() {
   if (turn === 0) round += 1;
   if (balances[0] <= 0) {
     gameOver = true;
-    addActivity("Your coins have run out. Start a new game to play again.");
+    const winningBalance = Math.max(...balances);
+    const winnerIndex = balances.indexOf(winningBalance);
+    const winnerName = names[winnerIndex];
+    addActivity("Game over — " + winnerName + " wins with " + winningBalance + " coins.");
+    $("sceneResult").textContent = "🏆  " + winnerName.toUpperCase() + " WINS THE GAME!";
+    $("sceneResult").classList.add("show");
   }
   refreshUI();
   if (!gameOver && turn !== 0) scheduleAiTurn();
