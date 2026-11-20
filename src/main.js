@@ -974,6 +974,24 @@ function refreshUI() {
   });
 }
 
+let winnerCrown = null;
+function showWinnerCrown(playerIndex) {
+  if (winnerCrown) winnerCrown.dispose();
+  winnerCrown = new TransformNode("winnerCrownRoot", scene);
+  const seat = seatPositions[playerIndex];
+  winnerCrown.position.set(seat.x * 0.72, 2.65, seat.z * 0.72);
+  const band = MeshBuilder.CreateCylinder("winnerCrownBand", { diameter: 0.82, height: 0.14, tessellation: 48 }, scene);
+  band.parent = winnerCrown; band.material = brass;
+  const crownGold = pbr("winnerCrownGold", "#f4cc75", 0.82, 0.18);
+  for (let i = 0; i < 5; i++) {
+    const x = (i - 2) * 0.25;
+    const spike = MeshBuilder.CreateCylinder("winnerCrownPoint", { height: 0.42, diameterTop: 0.025, diameterBottom: 0.18, tessellation: 4 }, scene);
+    spike.parent = winnerCrown; spike.position.set(x, 0.25, 0); spike.rotation.z = x * 0.32; spike.material = crownGold;
+    const jewel = MeshBuilder.CreateSphere("winnerCrownJewel", { diameter: 0.12, segments: 16 }, scene);
+    jewel.parent = winnerCrown; jewel.position.set(x, 0.08, 0.39); jewel.material = crownGold;
+  }
+  shadows.addShadowCaster(band);
+}
 function addActivity(message) {
   const p = document.createElement("p");
   const icon = document.createElement("span");
@@ -1062,6 +1080,7 @@ function advanceTurn() {
       : 1 + balances.slice(1).indexOf(Math.max(...balances.slice(1)));
     const winningBalance = balances[winnerIndex];
     const winnerName = names[winnerIndex];
+    showWinnerCrown(winnerIndex);
     if (winnerIndex === 0) gameWins += 1;
     else gameLosses += 1;
     try {
@@ -1268,6 +1287,7 @@ $("newGame").addEventListener("click", () => {
   balances = [100, 100, 100, 100];
   pot = 12; turn = 0; round = 1; bet = 1;
   gameOver = false; currentSpinPlayer = 0;
+  if (winnerCrown) { winnerCrown.dispose(); winnerCrown = null; }
   resetDreidel();
   $("sceneResult").classList.remove("show");
   $("activityLog").replaceChildren();
