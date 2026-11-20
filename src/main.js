@@ -360,14 +360,16 @@ artSun.position.set(0, 4.35, 11.29); artSun.rotation.y = Math.PI; artSun.materia
 // A low, generously cushioned sofa sits against the back wall.
 const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, depth: 1.65 }, scene);
 sofaBase.position.set(0, -1.28, 8.9); sofaBase.material = upholstery;
-const sofaBack = MeshBuilder.CreateBox("sofaBack", { width: 7.5, height: 1.8, depth: 0.62 }, scene);
+const sofaBack = MeshBuilder.CreateSphere("sofaBack", { diameter: 1, segments: 32 }, scene);
+sofaBack.scaling.set(3.75, 0.9, 0.36);
 sofaBack.position.set(0, -0.58, 9.48); sofaBack.material = upholstery;
 for (const x of [-2.85, -1.42, 0, 1.42, 2.85]) {
   const backSeam = MeshBuilder.CreateBox("sofaBackSeam", { width: 0.018, height: 1.45, depth: 0.018 }, scene);
   backSeam.position.set(x, -0.55, 9.16); backSeam.material = upholsteryLight;
 }
 for (const x of [-3.65, 3.65]) {
-  const arm = MeshBuilder.CreateBox("sofaArm", { width: 0.58, height: 1.25, depth: 1.75 }, scene);
+  const arm = MeshBuilder.CreateSphere("sofaArm", { diameter: 1, segments: 24 }, scene);
+  arm.scaling.set(0.38, 0.63, 0.9);
   arm.position.set(x, -1.12, 8.9); arm.material = upholstery;
 }
 for (const x of [-2.45, -0.85, 0.85, 2.45]) {
@@ -396,11 +398,13 @@ function makeArmchair(x, z, angle) {
   const cushion = MeshBuilder.CreateSphere("armchairSeatCushion", { diameter: 1, segments: 24 }, scene);
   cushion.parent = root; cushion.scaling.set(1.08, 0.18, 0.86);
   cushion.position.set(0, -0.66, -0.03); cushion.material = upholsteryLight;
-  const back = MeshBuilder.CreateBox("armchairBack", { width: 2.45, height: 1.65, depth: 0.38 }, scene);
-  back.parent = root; back.position.set(0, 0.08, -0.82); back.material = upholstery;
+  const back = MeshBuilder.CreateSphere("armchairBack", { diameter: 1, segments: 28 }, scene);
+  back.parent = root; back.scaling.set(1.23, 0.84, 0.22);
+  back.position.set(0, 0.08, -0.82); back.material = upholstery;
   for (const side of [-1, 1]) {
-    const arm = MeshBuilder.CreateBox("armchairArm", { width: 0.38, height: 0.82, depth: 1.8 }, scene);
-    arm.parent = root; arm.position.set(side * 1.04, -0.23, 0.02); arm.material = upholstery;
+    const arm = MeshBuilder.CreateSphere("armchairArm", { diameter: 1, segments: 24 }, scene);
+    arm.parent = root; arm.scaling.set(0.24, 0.43, 0.92);
+    arm.position.set(side * 1.04, -0.23, 0.02); arm.material = upholstery;
     const leg = MeshBuilder.CreateBox("armchairLeg", { width: 0.16, height: 0.9, depth: 0.16 }, scene);
     leg.parent = root; leg.position.set(side * 0.95, -1.24, 0.72); leg.material = cabinetMat;
     const rearLeg = MeshBuilder.CreateBox("armchairLeg", { width: 0.16, height: 0.9, depth: 0.16 }, scene);
