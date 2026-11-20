@@ -198,7 +198,11 @@ floor.position.y = -0.56;
 const floorMat = pbr("studioFloorMat", "#171820", 0.12, 0.82);
 floor.material = floorMat;
 floor.receiveShadows = true;
-shadows.addShadowCaster(dreidelRoot, true);
+// Register the actual meshes as shadow casters; TransformNode itself is not a mesh.
+shadows.addShadowCaster(topCollar);
+shadows.addShadowCaster(stem);
+shadows.addShadowCaster(stemCap);
+shadows.addShadowCaster(tip);
 
 let spinning = false;
 let spinElapsed = 0;
