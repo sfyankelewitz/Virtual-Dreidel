@@ -846,8 +846,12 @@ let gameBusy = false;
 let currentSpinPlayer = 0;
 let gameOver = false;
 const names = ["You", "Sarah", "David", "Moishe"];
-let gameWins = Number(localStorage.getItem("virtualDreidelWins") || 0);
-let gameLosses = Number(localStorage.getItem("virtualDreidelLosses") || 0);
+let gameWins = 0;
+let gameLosses = 0;
+try {
+  gameWins = Number(localStorage.getItem("virtualDreidelWins") || 0);
+  gameLosses = Number(localStorage.getItem("virtualDreidelLosses") || 0);
+} catch { /* Session records remain available even without browser storage. */ }
 const ownedFinishes = new Set(["walnut"]);
 try {
   const savedFinishes = JSON.parse(localStorage.getItem("virtualDreidelFinishes") || "[]");
