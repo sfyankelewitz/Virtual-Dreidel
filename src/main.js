@@ -12,26 +12,26 @@ const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = null;
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.05, 10.8, new Vector3(0, 0.7, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 15.2, new Vector3(0, 1.05, 0), scene);
 camera.attachControl(canvas, true);
-camera.lowerRadiusLimit = 6.2;
-camera.upperRadiusLimit = 17;
-camera.lowerBetaLimit = 0.55;
-camera.upperBetaLimit = 1.38;
+camera.lowerRadiusLimit = 9.5;
+camera.upperRadiusLimit = 22;
+camera.lowerBetaLimit = 0.62;
+camera.upperBetaLimit = 1.42;
 camera.wheelPrecision = 45;
 camera.panningSensibility = 0;
 
 const hemi = new HemisphericLight("ambient", new Vector3(0, 1, 0), scene);
-hemi.intensity = 0.68;
+hemi.intensity = 0.82;
 hemi.diffuse = new Color3(1, 0.88, 0.72);
 hemi.groundColor = new Color3(0.18, 0.15, 0.13);
 const key = new DirectionalLight("warmKey", new Vector3(-5, -9, 6), scene);
 key.position = new Vector3(5, 10, -5);
-key.intensity = 2.2;
+key.intensity = 2.0;
 key.diffuse = new Color3(1, 0.82, 0.61);
 const fill = new DirectionalLight("coolFill", new Vector3(4, -5, -3), scene);
 fill.position = new Vector3(-6, 5, 4);
-fill.intensity = 0.65;
+fill.intensity = 0.8;
 fill.diffuse = new Color3(0.65, 0.76, 1);
 
 const shadows = new ShadowGenerator(2048, key);
@@ -85,24 +85,89 @@ const brass = pbr("agedBrass", "#b88b4d", 0.82, 0.24);
 const felt = pbr("tableInlay", "#3e3026", 0.05, 0.9);
 const coinMat = pbr("coinGold", "#e5b957", 0.88, 0.22);
 const darkMat = pbr("darkMetal", "#302b2a", 0.8, 0.3);
+const roomWall = pbr("warmPlaster", "#b9a48a", 0.02, 0.92);
+const wallTrim = pbr("paintedTrim", "#e2d2b8", 0.04, 0.68);
+const upholstery = pbr("deepOliveVelvet", "#536052", 0.02, 0.96);
+const upholsteryLight = pbr("cushionVelvet", "#78816d", 0.02, 0.98);
+const rugMat = pbr("wovenRug", "#6d5142", 0.0, 1);
+const cabinetMat = pbr("sideboardWalnut", "#4b3023", 0.08, 0.42);
+const creamMat = pbr("lampLinen", "#e9d7b5", 0.0, 0.9);
+
+// A warm, enclosed living-room backdrop gives the table a real sense of place.
+const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
+roomFloor.position.set(0, -1.72, 0);
+roomFloor.material = pbr("roomFloorMat", "#594638", 0.04, 0.78);
+roomFloor.receiveShadows = true;
+const backWall = MeshBuilder.CreateBox("livingRoomBackWall", { width: 30, height: 12, depth: 0.35 }, scene);
+backWall.position.set(0, 4.2, -11.8); backWall.material = roomWall;
+const leftWall = MeshBuilder.CreateBox("livingRoomLeftWall", { width: 0.35, height: 12, depth: 24 }, scene);
+leftWall.position.set(-14.8, 4.2, 0); leftWall.material = roomWall;
+const rightWall = MeshBuilder.CreateBox("livingRoomRightWall", { width: 0.35, height: 12, depth: 24 }, scene);
+rightWall.position.set(14.8, 4.2, 0); rightWall.material = roomWall;
+for (const x of [-13.7, 13.7]) {
+  const trim = MeshBuilder.CreateBox("wallBaseboard", { width: 0.16, height: 0.38, depth: 23.5 }, scene);
+  trim.position.set(x, -1.48, 0); trim.material = wallTrim;
+}
+const backBaseboard = MeshBuilder.CreateBox("backWallBaseboard", { width: 29, height: 0.38, depth: 0.16 }, scene);
+backBaseboard.position.set(0, -1.48, -11.55); backBaseboard.material = wallTrim;
+
+// Large framed artwork, kept abstract so it reads as room decor rather than game UI.
+const artFrame = MeshBuilder.CreateBox("wallArtFrame", { width: 4.2, height: 2.8, depth: 0.16 }, scene);
+artFrame.position.set(0, 4.25, -11.48); artFrame.material = brass;
+const artCanvas = MeshBuilder.CreateBox("wallArtCanvas", { width: 3.9, height: 2.5, depth: 0.08 }, scene);
+artCanvas.position.set(0, 4.25, -11.36); artCanvas.material = pbr("artCanvas", "#31433f", 0.0, 0.95);
+const artSun = MeshBuilder.CreateDisc("artSun", { radius: 0.72, tessellation: 64 }, scene);
+artSun.position.set(0, 4.35, -11.29); artSun.rotation.x = Math.PI / 2; artSun.material = brass;
+
+// A low, generously cushioned sofa sits against the back wall.
+const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, depth: 1.65 }, scene);
+sofaBase.position.set(0, -0.45, -8.9); sofaBase.material = upholstery;
+const sofaBack = MeshBuilder.CreateBox("sofaBack", { width: 7.5, height: 1.8, depth: 0.62 }, scene);
+sofaBack.position.set(0, 0.72, -9.48); sofaBack.material = upholstery;
+for (const x of [-3.65, 3.65]) {
+  const arm = MeshBuilder.CreateBox("sofaArm", { width: 0.58, height: 1.25, depth: 1.75 }, scene);
+  arm.position.set(x, 0.02, -8.9); arm.material = upholstery;
+}
+for (const x of [-2.45, -0.85, 0.85, 2.45]) {
+  const cushion = MeshBuilder.CreateBox("sofaCushion", { width: 1.48, height: 0.2, depth: 1.25 }, scene);
+  cushion.position.set(x, -0.045, -8.55); cushion.material = upholsteryLight;
+}
+const rug = MeshBuilder.CreateBox("livingRoomRug", { width: 17, height: 0.08, depth: 13 }, scene);
+rug.position.set(0, -1.64, -0.1); rug.material = rugMat;
+
+// A pair of side tables and lamps add warm residential scale to the background.
+for (const x of [-8.0, 8.0]) {
+  const sideTop = MeshBuilder.CreateBox("sideTableTop", { width: 1.55, height: 0.16, depth: 1.35 }, scene);
+  sideTop.position.set(x, -0.05, -8.55); sideTop.material = cabinetMat;
+  for (const dx of [-0.58, 0.58]) {
+    const leg = MeshBuilder.CreateBox("sideTableLeg", { width: 0.12, height: 1.05, depth: 0.12 }, scene);
+    leg.position.set(x + dx, -0.61, -8.55); leg.material = cabinetMat;
+  }
+  const lampBase = MeshBuilder.CreateCylinder("lampBase", { diameter: 0.42, height: 0.16, tessellation: 32 }, scene);
+  lampBase.position.set(x, 0.1, -8.55); lampBase.material = brass;
+  const lampStem = MeshBuilder.CreateCylinder("lampStem", { diameter: 0.09, height: 0.75, tessellation: 24 }, scene);
+  lampStem.position.set(x, 0.55, -8.55); lampStem.material = darkMat;
+  const lampShade = MeshBuilder.CreateCylinder("lampShade", { diameterTop: 0.85, diameterBottom: 1.2, height: 0.72, tessellation: 48 }, scene);
+  lampShade.position.set(x, 1.25, -8.55); lampShade.material = creamMat;
+}
 
 // The table is built as real Babylon meshes, with layered walnut and brass details.
-const tableBase = MeshBuilder.CreateCylinder("tableBase", { diameter: 14.2, height: 0.52, tessellation: 128 }, scene);
+const tableBase = MeshBuilder.CreateCylinder("tableBase", { diameter: 12.9, height: 0.52, tessellation: 128 }, scene);
 tableBase.position.y = -0.28;
 tableBase.material = darkWood;
 tableBase.receiveShadows = true;
-const tableTop = MeshBuilder.CreateCylinder("walnutTabletop", { diameter: 13.9, height: 0.16, tessellation: 128 }, scene);
+const tableTop = MeshBuilder.CreateCylinder("walnutTabletop", { diameter: 12.65, height: 0.16, tessellation: 128 }, scene);
 tableTop.position.y = 0.04;
 tableTop.material = tableMat;
 tableTop.receiveShadows = true;
 shadows.addShadowCaster(tableBase);
 shadows.addShadowCaster(tableTop);
-for (const [diameter, tube, y] of [[13.95, 0.045, 0.12], [13.45, 0.025, 0.125], [8.0, 0.018, 0.126]]) {
+for (const [diameter, tube, y] of [[12.72, 0.055, 0.12], [12.25, 0.028, 0.125], [7.45, 0.025, 0.126]]) {
   const ring = MeshBuilder.CreateTorus("brassTableInlay", { diameter, thickness: tube, tessellation: 128 }, scene);
   ring.position.y = y;
   ring.material = brass;
 }
-const centerFelt = MeshBuilder.CreateCylinder("centerFelt", { diameter: 7.85, height: 0.012, tessellation: 96 }, scene);
+const centerFelt = MeshBuilder.CreateCylinder("centerFelt", { diameter: 7.35, height: 0.012, tessellation: 96 }, scene);
 centerFelt.position.y = 0.125;
 centerFelt.material = felt;
 
@@ -117,14 +182,14 @@ function makeCoin(x, z, count = 3) {
   }
 }
 makeCoin(-1.25, 0.35, 4); makeCoin(1.2, -0.2, 3); makeCoin(0.1, 1.25, 2);
-const potRing = MeshBuilder.CreateTorus("potMarker", { diameter: 3.25, thickness: 0.025, tessellation: 96 }, scene);
+const potRing = MeshBuilder.CreateTorus("potMarker", { diameter: 3.0, thickness: 0.03, tessellation: 96 }, scene);
 potRing.position.y = 0.15;
 potRing.material = brass;
 
 // Four understated seat markers help establish the multiplayer table layout.
 const seatPositions = [
-  new Vector3(0, 0.15, -5.0), new Vector3(5.0, 0.15, 0),
-  new Vector3(0, 0.15, 5.0), new Vector3(-5.0, 0.15, 0)
+  new Vector3(0, 0.15, -4.55), new Vector3(4.55, 0.15, 0),
+  new Vector3(0, 0.15, 4.55), new Vector3(-4.55, 0.15, 0)
 ];
 const seatMaterials = ["#b98b4d", "#bb8291", "#789bbd", "#82a78d"].map((c, i) => pbr("seat" + i, c, 0.25, 0.4));
 seatPositions.forEach((pos, i) => {
@@ -193,9 +258,9 @@ faceLetters.forEach((letter, i) => {
 });
 
 // A soft shadow-catching floor beneath the table.
-const floor = MeshBuilder.CreateGround("studioFloor", { width: 200, height: 200 }, scene);
-floor.position.y = -0.56;
-const floorMat = pbr("studioFloorMat", "#171820", 0.12, 0.82);
+const floor = MeshBuilder.CreateGround("studioFloor", { width: 34, height: 30 }, scene);
+floor.position.y = -1.72;
+const floorMat = pbr("studioFloorMat", "#594638", 0.04, 0.78);
 floor.material = floorMat;
 floor.receiveShadows = true;
 // Register the actual meshes as shadow casters; TransformNode itself is not a mesh.
@@ -257,7 +322,7 @@ function addActivity(message) {
 function resetDreidel() {
   dreidelRoot.rotation.set(0, 0, 0);
   dreidelRoot.position.set(0, 0.14, 0);
-  dreidelRoot.scaling.setAll(1);
+  dreidelRoot.scaling.setAll(1.55);
 }
 
 function spinDreidel() {
@@ -324,8 +389,8 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
 }));
 $("spinButton").addEventListener("click", spinDreidel);
 $("resetCamera").addEventListener("click", () => {
-  camera.setTarget(new Vector3(0, 0.7, 0));
-  camera.alpha = -Math.PI / 2.25; camera.beta = 1.05; camera.radius = 10.8;
+  camera.setTarget(new Vector3(0, 1.05, 0));
+  camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 15.2;
 });
 $("fullscreen").addEventListener("click", () => {
   const host = $("render-host");
