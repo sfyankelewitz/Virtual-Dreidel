@@ -852,7 +852,7 @@ try {
 const letters = ["נ", "ג", "ה", "ש"];
 const resultNames = { "נ": "NUN — Nothing happens", "ג": "GIMEL — Take the whole pot!", "ה": "HEY — Take half the pot", "ש": "SHIN — Add one coin to the pot" };
 function saveGame() {
-  try { localStorage.setItem("virtualDreidelSavedGame", JSON.stringify({ balances, pot, turn, round, bet })); }
+  try { localStorage.setItem("virtualDreidelSavedGame", JSON.stringify({ balances, pot, turn, round, bet, gameOver })); }
   catch { /* The current session continues even if storage is unavailable. */ }
 }
 try {
@@ -865,6 +865,7 @@ try {
     balances = saved.balances;
     pot = saved.pot; turn = saved.turn; round = saved.round;
     bet = Number.isFinite(saved.bet) && saved.bet > 0 ? saved.bet : 1;
+    gameOver = saved.gameOver === true;
   }
 } catch { /* Start with a fresh table if saved game data is unreadable. */ }
 const $ = id => document.getElementById(id);
