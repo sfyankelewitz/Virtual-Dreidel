@@ -339,7 +339,7 @@ seatPositions.forEach((pos, i) => {
 // Each player's reserve is visible as a little stack of coins at their seat.
 // One rendered coin represents ten game coins, keeping the table readable.
 const playerCoinMeshes = [[], [], [], []];
-const playerCoinSpots = [[0, -3.55], [3.55, 0], [0, 3.55], [-3.55, 0]];
+const playerCoinSpots = [[1.35, -3.9], [3.9, 1.35], [-1.35, 3.9], [-3.9, -1.35]];
 function updatePlayerCoinStacks() {
   balances.forEach((balance, playerIndex) => {
     const visibleCount = Math.min(12, Math.ceil(balance / 10));
@@ -610,10 +610,16 @@ scene.onBeforeRenderObservable.add(() => {
   const progress = Math.min(spinElapsed / spinDuration, 1);
   const decay = Math.pow(1 - progress, 1.65);
   dreidelRoot.rotation.y += spinSpeed * decay * dt;
-  const wobble = (0.025 + (1 - decay) * 0.22) * Math.sin(spinElapsed * 17);
-  dreidelRoot.rotation.x = wobble * decay + Math.sin(spinElapsed * 8) * (1 - decay) * 0.07;
-  dreidelRoot.rotation.z = Math.cos(spinElapsed * 13) * (1 - decay) * 0.09;
-  dreidelRoot.position.y = 0.14 + Math.abs(Math.sin(spinElapsed * 20)) * 0.035 * decay;
+  // As the spin loses speed, the top begins a wider precessing wobble.
+  // The motion remains scripted for now; a physics engine can replace it later.
+  const wobbleGrowth = Math.pow(1 - decay, 0.78);
+  const wobbleSize = 0.035 + wobbleGrowth * 0.62;
+  const precession = spinElapsed * (2.2 + (1 - decay) * 2.8);
+  dreidelRoot.rotation.x = Math.sin(precession) * wobbleSize;
+  dreidelRoot.rotation.z = Math.cos(precession) * wobbleSize * 0.78;
+  dreidelRoot.position.x = Math.sin(precession * 0.5) * wobbleGrowth * 0.11;
+  dreidelRoot.position.z = Math.cos(precession * 0.5) * wobbleGrowth * 0.11;
+  dreidelRoot.position.y = 0.14 + Math.abs(Math.sin(spinElapsed * 20)) * 0.055 * decay;
   if (progress >= 1) {
     spinning = false;
     dreidelRoot.rotation.y = faceRotations[letters.indexOf(resultLetter)] + Math.PI / 4;
