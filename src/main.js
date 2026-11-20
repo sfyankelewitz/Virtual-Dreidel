@@ -211,7 +211,12 @@ function setTableFinish(finish) {
   document.querySelectorAll(".table-finish-option").forEach(button => {
     button.classList.toggle("active", button.dataset.finish === finish);
   });
+  try { localStorage.setItem("virtualDreidelSelectedTableFinish", finish); } catch { /* Current selection still applies. */ }
 }
+try {
+  const savedTableFinish = localStorage.getItem("virtualDreidelSelectedTableFinish");
+  if (savedTableFinish && ownedTableFinishes.has(savedTableFinish)) setTableFinish(savedTableFinish);
+} catch { /* Use the walnut table by default. */ }
 
 
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
@@ -739,7 +744,12 @@ function setDreidelFinish(finish) {
   document.querySelectorAll(".dreidel-finish-option").forEach(button => {
     button.classList.toggle("active", button.dataset.finish === finish);
   });
+  try { localStorage.setItem("virtualDreidelSelectedFinish", finish); } catch { /* Current selection still applies. */ }
 }
+try {
+  const savedFinish = localStorage.getItem("virtualDreidelSelectedFinish");
+  if (savedFinish && ownedFinishes.has(savedFinish)) setDreidelFinish(savedFinish);
+} catch { /* Use the walnut finish by default. */ }
 // A traditional, broad four-sided wooden body with a restrained taper.
 const body = MeshBuilder.CreateCylinder("fourSidedDreidelBody", {
   height: 1.12, diameterTop: 1.34, diameterBottom: 1.16, tessellation: 4, subdivisions: 1
