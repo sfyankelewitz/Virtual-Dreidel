@@ -12,9 +12,9 @@ const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = null;
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 15.2, new Vector3(0, 1.05, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 15.2, new Vector3(0, 1.15, 0), scene);
 camera.attachControl(canvas, true);
-camera.lowerRadiusLimit = 9.5;
+camera.lowerRadiusLimit = 11.5;
 camera.upperRadiusLimit = 22;
 camera.lowerBetaLimit = 0.62;
 camera.upperBetaLimit = 1.42;
@@ -92,6 +92,8 @@ const upholsteryLight = pbr("cushionVelvet", "#78816d", 0.02, 0.98);
 const rugMat = pbr("wovenRug", "#6d5142", 0.0, 1);
 const cabinetMat = pbr("sideboardWalnut", "#4b3023", 0.08, 0.42);
 const creamMat = pbr("lampLinen", "#e9d7b5", 0.0, 0.9);
+const windowGlass = pbr("eveningWindowGlass", "#536c78", 0.22, 0.22);
+const curtainMat = pbr("heavyCurtain", "#8a6b55", 0.0, 0.96);
 
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
 const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
@@ -104,6 +106,22 @@ const leftWall = MeshBuilder.CreateBox("livingRoomLeftWall", { width: 0.35, heig
 leftWall.position.set(-14.8, 4.2, 0); leftWall.material = roomWall;
 const rightWall = MeshBuilder.CreateBox("livingRoomRightWall", { width: 0.35, height: 12, depth: 24 }, scene);
 rightWall.position.set(14.8, 4.2, 0); rightWall.material = roomWall;
+
+// Tall window, divided into elegant panes, with heavy warm-toned curtains.
+const windowFrame = MeshBuilder.CreateBox("livingRoomWindowFrame", { width: 0.2, height: 4.5, depth: 6.4 }, scene);
+windowFrame.position.set(14.48, 4.25, 0.4); windowFrame.material = cabinetMat;
+const windowPane = MeshBuilder.CreateBox("livingRoomWindowPane", { width: 0.08, height: 4.15, depth: 6.05 }, scene);
+windowPane.position.set(14.34, 4.25, 0.4); windowPane.material = windowGlass;
+for (const z of [-1.55, 0.4, 2.35]) {
+  const mullion = MeshBuilder.CreateBox("windowMullion", { width: 0.1, height: 4.1, depth: 0.11 }, scene);
+  mullion.position.set(14.25, 4.25, z); mullion.material = brass;
+}
+const windowCrossbar = MeshBuilder.CreateBox("windowCrossbar", { width: 0.1, height: 0.12, depth: 6.0 }, scene);
+windowCrossbar.position.set(14.25, 4.25, 0.4); windowCrossbar.material = brass;
+for (const z of [-3.0, 3.8]) {
+  const curtain = MeshBuilder.CreateBox("windowCurtain", { width: 0.34, height: 4.9, depth: 0.85 }, scene);
+  curtain.position.set(14.18, 4.2, z); curtain.material = curtainMat;
+}
 for (const x of [-13.7, 13.7]) {
   const trim = MeshBuilder.CreateBox("wallBaseboard", { width: 0.16, height: 0.38, depth: 23.5 }, scene);
   trim.position.set(x, -1.48, 0); trim.material = wallTrim;
@@ -194,6 +212,8 @@ const tableTop = MeshBuilder.CreateCylinder("walnutTabletop", { diameter: 12.65,
 tableTop.position.y = 0.04;
 tableTop.material = tableMat;
 tableTop.receiveShadows = true;
+const outerEdgeTrim = MeshBuilder.CreateTorus("tableOuterBrassEdge", { diameter: 12.82, thickness: 0.045, tessellation: 128 }, scene);
+outerEdgeTrim.position.y = -0.005; outerEdgeTrim.material = brass;
 shadows.addShadowCaster(tableBase);
 shadows.addShadowCaster(tableTop);
 
@@ -221,14 +241,14 @@ centerFelt.material = felt;
 // Coin stacks around the central pot.
 function makeCoin(x, z, count = 3) {
   for (let i = 0; i < count; i++) {
-    const coin = MeshBuilder.CreateCylinder("dreidelCoin", { diameter: 0.39, height: 0.055, tessellation: 48 }, scene);
-    coin.position.set(x + i * 0.035, 0.19 + i * 0.052, z);
+    const coin = MeshBuilder.CreateCylinder("dreidelCoin", { diameter: 0.46, height: 0.065, tessellation: 48 }, scene);
+    coin.position.set(x + i * 0.035, 0.19 + i * 0.062, z);
     coin.material = coinMat;
     coin.rotation.z = (Math.random() - 0.5) * 0.12;
     shadows.addShadowCaster(coin);
   }
 }
-makeCoin(-1.25, 0.35, 4); makeCoin(1.2, -0.2, 3); makeCoin(0.1, 1.25, 2);
+makeCoin(-1.45, 0.45, 5); makeCoin(1.45, -0.35, 4); makeCoin(0.0, 1.55, 3);
 const potRing = MeshBuilder.CreateTorus("potMarker", { diameter: 3.0, thickness: 0.03, tessellation: 96 }, scene);
 potRing.position.y = 0.15;
 potRing.material = brass;
@@ -450,8 +470,8 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
 }));
 $("spinButton").addEventListener("click", spinDreidel);
 $("resetCamera").addEventListener("click", () => {
-  camera.setTarget(new Vector3(0, 1.05, 0));
-  camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 15.2;
+  camera.setTarget(new Vector3(0, 1.15, 0));
+  camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 17.5;
 });
 $("fullscreen").addEventListener("click", () => {
   const host = $("render-host");
