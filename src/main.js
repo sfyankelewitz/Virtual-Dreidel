@@ -127,7 +127,7 @@ shelfLevels.slice(0, 4).forEach((y, row) => {
     book.rotation.x = (i % 4 === 0 ? -0.035 : 0.015);
     book.material = bookMaterials[(i + row) % bookMaterials.length];
   }
-}
+});
 
 const rightWall = MeshBuilder.CreateBox("livingRoomRightWall", { width: 0.35, height: 12, depth: 24 }, scene);
 rightWall.position.set(14.8, 4.2, 0); rightWall.material = roomWall;
