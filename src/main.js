@@ -154,6 +154,44 @@ for (const x of [-13.7, 13.7]) {
 const backBaseboard = MeshBuilder.CreateBox("backWallBaseboard", { width: 29, height: 0.38, depth: 0.16 }, scene);
 backBaseboard.position.set(0, -1.48, 11.55); backBaseboard.material = wallTrim;
 
+// A walnut console and a nine-branch brass menorah bring a warm Chanukah
+// detail into the living room, behind the sofa.
+const consoleTop = MeshBuilder.CreateBox("walnutConsoleTop", { width: 6.2, height: 0.18, depth: 0.78 }, scene);
+consoleTop.position.set(0, -0.42, 10.55); consoleTop.material = cabinetMat;
+for (const x of [-2.75, 2.75]) {
+  for (const z of [10.28, 10.82]) {
+    const leg = MeshBuilder.CreateBox("consoleLeg", { width: 0.16, height: 1.15, depth: 0.16 }, scene);
+    leg.position.set(x, -1.08, z); leg.material = darkWood;
+  }
+}
+const menorahBase = MeshBuilder.CreateCylinder("menorahBase", { diameter: 0.9, height: 0.12, tessellation: 48 }, scene);
+menorahBase.position.set(0, -0.27, 10.5); menorahBase.material = brass;
+const menorahStem = MeshBuilder.CreateCylinder("menorahCenterStem", { diameter: 0.11, height: 1.45, tessellation: 32 }, scene);
+menorahStem.position.set(0, 0.49, 10.5); menorahStem.material = brass;
+const menorahCandleWax = pbr("menorahIvoryWax", "#f0dfbd", 0.0, 0.72);
+const flameMat = new StandardMaterial("menorahFlameMaterial", scene);
+flameMat.diffuseColor = new Color3(1, 0.42, 0.08);
+flameMat.emissiveColor = new Color3(1, 0.28, 0.035);
+const menorahOffsets = [-1.45, -1.08, -0.72, -0.36, 0, 0.36, 0.72, 1.08, 1.45];
+menorahOffsets.forEach((offset, index) => {
+  const height = index === 4 ? 1.38 : 0.72 + (1 - Math.abs(offset) / 1.45) * 0.18;
+  if (offset !== 0) {
+    const branch = MeshBuilder.CreateCylinder("menorahBranch", { diameter: 0.075, height: Math.abs(offset), tessellation: 24 }, scene);
+    branch.position.set(offset / 2, height - 0.18, 10.5);
+    branch.rotation.z = offset > 0 ? Math.PI / 2 : -Math.PI / 2;
+    branch.material = brass;
+  }
+  const candleCup = MeshBuilder.CreateCylinder("menorahCandleCup", { diameter: 0.19, height: 0.12, tessellation: 32 }, scene);
+  candleCup.position.set(offset, height - 0.08, 10.5); candleCup.material = brass;
+  const candle = MeshBuilder.CreateCylinder("menorahCandle", { diameter: 0.105, height: 0.34, tessellation: 24 }, scene);
+  candle.position.set(offset, height + 0.13, 10.5); candle.material = menorahCandleWax;
+  const flame = MeshBuilder.CreateSphere("menorahFlame", { diameter: 0.13, segments: 16 }, scene);
+  flame.position.set(offset, height + 0.37, 10.5); flame.scaling.y = 1.45; flame.material = flameMat;
+});
+const menorahGlow = new PointLight("menorahWarmGlow", new Vector3(0, 1.15, 10.25), scene);
+menorahGlow.diffuse = new Color3(1, 0.46, 0.16); menorahGlow.intensity = 0.75; menorahGlow.range = 8;
+
+
 // Large framed artwork, kept abstract so it reads as room decor rather than game UI.
 const artFrame = MeshBuilder.CreateBox("wallArtFrame", { width: 4.2, height: 2.8, depth: 0.16 }, scene);
 artFrame.position.set(0, 4.25, 11.48); artFrame.material = brass;
@@ -318,7 +356,7 @@ seatPositions.forEach((pos, i) => {
   inner.material = brass;
 
   const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.65, height: 0.055, depth: 0.42 }, scene);
-  plaque.position.set(pos.x * 0.82, 0.205, pos.z * 0.82);
+  plaque.position.set(pos.x * 0.7, 0.205, pos.z * 0.7);
   plaque.material = darkWood;
   const texture = new DynamicTexture("playerNameTexture" + i, { width: 512, height: 128 }, scene, true);
   const ctx = texture.getContext();
@@ -328,7 +366,7 @@ seatPositions.forEach((pos, i) => {
   ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(["YOU", "SARAH", "DAVID", "MOISHE"][i], 256, 66);
   texture.update();
   const label = MeshBuilder.CreatePlane("playerNameLabel" + i, { width: 1.58, height: 0.34, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
-  label.position.set(pos.x * 0.82, 0.239, pos.z * 0.82);
+  label.position.set(pos.x * 0.7, 0.239, pos.z * 0.7);
   label.rotation.x = Math.PI / 2;
   const labelMat = new StandardMaterial("playerNameLabelMat" + i, scene);
   labelMat.diffuseTexture = texture; labelMat.emissiveColor = new Color3(0.25, 0.2, 0.13);
