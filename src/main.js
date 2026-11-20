@@ -507,6 +507,49 @@ artCanvas.material = artMaterial;
 const artSun = MeshBuilder.CreateDisc("artSun", { radius: 0.72, tessellation: 64 }, scene);
 artSun.position.set(0, 4.35, 11.29); artSun.rotation.y = Math.PI; artSun.material = brass;
 
+// Storybook fireplace: layered rounded stonework, glowing hearth and animated flames.
+const fireplaceStone = pbr("storybookFireplaceStone", "#e8b77d", 0.0, 0.88);
+const fireplaceDark = pbr("storybookFireplaceInterior", "#392c50", 0.02, 0.9);
+const fireplaceMantelMat = pbr("storybookFireplaceMantel", "#b66b43", 0.04, 0.58);
+const fireplaceRoot = new TransformNode("storybookFireplace", scene);
+fireplaceRoot.position.set(-8.0, 0, 11.35);
+function fireplaceBox(name, width, height, depth, x, y, z, material, radius = 0.18) {
+  const mesh = MeshBuilder.CreateBox(name, { width, height, depth }, scene);
+  mesh.parent = fireplaceRoot;
+  mesh.position.set(x, y, z);
+  mesh.material = material;
+  mesh.isPickable = false;
+  return mesh;
+}
+fireplaceBox("fireplaceOuterStone", 5.2, 4.8, 0.62, 0, 0.72, 0, fireplaceStone);
+fireplaceBox("fireplaceOpening", 3.15, 2.55, 0.18, 0, 0.18, -0.36, fireplaceDark);
+fireplaceBox("fireplaceHearth", 4.0, 0.32, 1.05, 0, -1.48, -0.1, fireplaceMantelMat);
+fireplaceBox("fireplaceMantel", 5.8, 0.38, 0.95, 0, 3.2, -0.02, fireplaceMantelMat);
+for (const side of [-1, 1]) {
+  const pillar = MeshBuilder.CreateCapsule("fireplaceRoundedPillar", { height: 4.15, radius: 0.24, tessellation: 16, subdivisions: 4 }, scene);
+  pillar.parent = fireplaceRoot;
+  pillar.position.set(side * 2.25, 0.8, -0.42);
+  pillar.material = fireplaceStone;
+  pillar.isPickable = false;
+}
+const fireplaceFlameMat = new StandardMaterial("storybookFireFlame", scene);
+fireplaceFlameMat.diffuseColor = new Color3(1, 0.42, 0.08);
+fireplaceFlameMat.emissiveColor = new Color3(1, 0.23, 0.025);
+const fireplaceFlames = [];
+for (let i = 0; i < 7; i++) {
+  const flame = MeshBuilder.CreateSphere("storybookFireFlame", { diameter: 0.72, segments: 12 }, scene);
+  flame.parent = fireplaceRoot;
+  flame.position.set(-1.05 + i * 0.35, -0.72 + (i % 3) * 0.18, -0.54);
+  flame.scaling.set(0.48, 1.35 + (i % 3) * 0.16, 0.38);
+  flame.material = fireplaceFlameMat;
+  flame.isPickable = false;
+  fireplaceFlames.push({ mesh: flame, phase: i * 0.8, baseY: flame.position.y });
+}
+const fireLight = new PointLight("storybookFireLight", new Vector3(-8, 0.8, 9.8), scene);
+fireLight.diffuse = new Color3(1, 0.32, 0.08);
+fireLight.intensity = 1.25;
+fireLight.range = 11;
+
 // A low, generously cushioned sofa sits against the back wall.
 const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, depth: 1.65 }, scene);
 sofaBase.position.set(0, -1.28, 8.9); sofaBase.material = upholstery;
@@ -1276,6 +1319,13 @@ scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
   roomFlickerTime += dt;
+  fireplaceFlames.forEach(({ mesh, phase, baseY }) => {
+    const flicker = 0.86 + Math.sin(roomFlickerTime * 9 + phase) * 0.2;
+    mesh.scaling.y = (1.35 + (phase % 0.3)) * flicker;
+    mesh.position.y = baseY + Math.sin(roomFlickerTime * 7 + phase) * 0.12;
+    mesh.position.x += Math.sin(roomFlickerTime * 3 + phase) * 0.0008;
+  });
+  fireLight.intensity = 1.05 + Math.sin(roomFlickerTime * 8.5) * 0.18 + Math.sin(roomFlickerTime * 15) * 0.08;
   storybookSparkles.forEach(({ mesh, phase, baseY }) => { mesh.position.y = baseY + Math.sin(roomFlickerTime * 1.8 + phase) * 0.16; mesh.rotation.y += dt * (0.8 + phase * 0.08); mesh.scaling.setAll(0.82 + (Math.sin(roomFlickerTime * 2.5 + phase) + 1) * 0.16); });
   if (winnerCrown) { winnerCrown.rotation.y += dt * 0.5; winnerCrown.position.y = 2.65 + Math.sin(roomFlickerTime * 2.2) * 0.08; }
   menorahFlames.forEach((flame, i) => {
