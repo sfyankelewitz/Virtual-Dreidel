@@ -33,6 +33,15 @@ const key = new DirectionalLight("warmKey", new Vector3(-5, -9, 6), scene);
 key.position = new Vector3(5, 10, -5);
 key.intensity = 2.0;
 key.diffuse = new Color3(1, 0.82, 0.61);
+key.specular = new Color3(1, 0.9, 0.72);
+const tableFill = new PointLight("tableSoftboxFill", new Vector3(-1.5, 7.5, -1.2), scene);
+tableFill.diffuse = new Color3(1, 0.84, 0.66);
+tableFill.intensity = 0.55;
+tableFill.range = 15;
+const coolRim = new PointLight("coolRoomRim", new Vector3(6.5, 5.2, 2.5), scene);
+coolRim.diffuse = new Color3(0.62, 0.74, 1);
+coolRim.intensity = 0.28;
+coolRim.range = 13;
 const fill = new DirectionalLight("coolFill", new Vector3(4, -5, -3), scene);
 fill.position = new Vector3(-6, 5, 4);
 fill.intensity = 0.8;
@@ -57,6 +66,35 @@ function pbr(name, color, metallic = 0, roughness = 0.55) {
   mat.metallic = metallic;
   mat.roughness = roughness;
   return mat;
+}
+
+function wovenTexture(name, base, thread, spacing = 8) {
+  const tex = new DynamicTexture(name, { width: 512, height: 512 }, scene, false);
+  const ctx = tex.getContext();
+  ctx.fillStyle = base; ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 512; i += spacing) {
+    ctx.strokeStyle = thread; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(512, i); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
+  }
+  for (let i = 0; i < 1600; i++) {
+    ctx.fillStyle = i % 2 ? "rgba(255,255,255,.035)" : "rgba(0,0,0,.035)";
+    ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+  }
+  tex.update(); tex.wrapU = Texture.WRAP_ADDRESSMODE; tex.wrapV = Texture.WRAP_ADDRESSMODE;
+  return tex;
+}
+
+function plasterTexture() {
+  const tex = new DynamicTexture("subtlePlaster", { width: 512, height: 512 }, scene, false);
+  const ctx = tex.getContext();
+  ctx.fillStyle = "#b9a48a"; ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 9000; i++) {
+    const tone = i % 2 ? "rgba(255,245,225,.06)" : "rgba(65,45,30,.035)";
+    ctx.fillStyle = tone; ctx.fillRect(Math.random() * 512, Math.random() * 512, 1 + Math.random() * 2, 1 + Math.random() * 2);
+  }
+  tex.update(); tex.wrapU = Texture.WRAP_ADDRESSMODE; tex.wrapV = Texture.WRAP_ADDRESSMODE;
+  return tex;
 }
 
 function woodTexture() {
@@ -101,6 +139,18 @@ const cabinetMat = pbr("sideboardWalnut", "#4b3023", 0.08, 0.42);
 const creamMat = pbr("lampLinen", "#e9d7b5", 0.0, 0.9);
 const windowGlass = pbr("eveningWindowGlass", "#536c78", 0.22, 0.22);
 const curtainMat = pbr("heavyCurtain", "#8a6b55", 0.0, 0.96);
+roomWall.albedoTexture = plasterTexture();
+upholstery.albedoTexture = wovenTexture("oliveVelvetWeave", "#536052", "rgba(220,225,200,.06)", 5);
+upholsteryLight.albedoTexture = wovenTexture("cushionWeave", "#78816d", "rgba(245,240,215,.08)", 6);
+curtainMat.albedoTexture = wovenTexture("curtainLinenWeave", "#8a6b55", "rgba(235,205,170,.08)", 7);
+tableMat.roughness = 0.3;
+tableMat.metallic = 0.08;
+tableMat.clearCoat.isEnabled = true;
+tableMat.clearCoat.intensity = 0.32;
+tableMat.clearCoat.roughness = 0.28;
+bodyMat.clearCoat.isEnabled = true;
+bodyMat.clearCoat.intensity = 0.24;
+bodyMat.clearCoat.roughness = 0.3;
 
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
 const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
@@ -800,10 +850,21 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
   refreshUI();
 }));
 $("spinButton").addEventListener("click", spinDreidel);
-$("resetCamera").addEventListener("click", () => {
-  camera.setTarget(new Vector3(0, 0.9, 0));
-  camera.alpha = -Math.PI / 2.25; camera.beta = 1.16; camera.radius = 19.5;
-});
+function setCameraPreset(mode) {
+  if (mode === "table") {
+    camera.setTarget(new Vector3(0, 0.45, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 0.88; camera.radius = 15.2;
+  } else if (mode === "room") {
+    camera.setTarget(new Vector3(0, 0.9, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.16; camera.radius = 19.5;
+  } else {
+    camera.setTarget(new Vector3(0, 0.8, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.28; camera.radius = 22;
+  }
+}
+$("resetCamera").addEventListener("click", () => setCameraPreset("room"));
+$("viewTable").addEventListener("click", () => setCameraPreset("table"));
+$("viewRoom").addEventListener("click", () => setCameraPreset("wide"));
 $("fullscreen").addEventListener("click", () => {
   const host = $("render-host");
   if (document.fullscreenElement) document.exitFullscreen?.();
