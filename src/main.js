@@ -1101,6 +1101,7 @@ scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
   roomFlickerTime += dt;
+  if (winnerCrown) { winnerCrown.rotation.y += dt * 0.5; winnerCrown.position.y = 2.65 + Math.sin(roomFlickerTime * 2.2) * 0.08; }
   menorahFlames.forEach((flame, i) => {
     const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
     flame.scaling.set(0.82 * flicker, 1.45 * flicker, 0.82 * flicker);
