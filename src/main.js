@@ -3,21 +3,25 @@ import {
   Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4,
   HemisphericLight, DirectionalLight, PointLight, MeshBuilder, PBRMaterial,
   StandardMaterial, DynamicTexture, TransformNode, ShadowGenerator,
-  GlowLayer, Texture, Scalar
+  GlowLayer, Texture, Scalar, CubeTexture
 } from "@babylonjs/core";
 
 const canvas = document.getElementById("renderCanvas");
 const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, antialias: true });
 const scene = new Scene(engine);
 scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
-scene.environmentTexture = null;
+scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
+scene.environmentIntensity = 0.8;
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 17.5, new Vector3(0, 1.15, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.16, 19.5, new Vector3(0, 0.9, 0), scene);
 camera.attachControl(canvas, true);
-camera.lowerRadiusLimit = 11.5;
-camera.upperRadiusLimit = 22;
-camera.lowerBetaLimit = 0.62;
-camera.upperBetaLimit = 1.42;
+camera.lowerRadiusLimit = 14.5;
+camera.upperRadiusLimit = 23;
+camera.lowerBetaLimit = 0.82;
+camera.upperBetaLimit = 1.34;
+camera.checkCollisions = true;
+camera.collisionRadius = new Vector3(0.55, 0.55, 0.55);
+scene.collisionsEnabled = true;
 camera.wheelPrecision = 45;
 camera.panningSensibility = 0;
 
@@ -36,13 +40,16 @@ fill.diffuse = new Color3(0.65, 0.76, 1);
 
 const shadows = new ShadowGenerator(2048, key);
 shadows.useBlurExponentialShadowMap = true;
-shadows.blurKernel = 24;
-shadows.setDarkness(0.34);
+shadows.blurKernel = 32;
+shadows.setDarkness(0.27);
+shadows.bias = 0.0005;
+shadows.normalBias = 0.025;
 scene.imageProcessingConfiguration.toneMappingEnabled = true;
 scene.imageProcessingConfiguration.exposure = 1.15;
 scene.imageProcessingConfiguration.contrast = 1.15;
 const glow = new GlowLayer("subtleGlow", scene);
-glow.intensity = 0.22;
+glow.intensity = 0.12;
+scene.ambientColor = new Color3(0.16, 0.14, 0.12);
 
 function pbr(name, color, metallic = 0, roughness = 0.55) {
   const mat = new PBRMaterial(name, scene);
@@ -100,10 +107,13 @@ const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, heigh
 roomFloor.position.set(0, -1.72, 0);
 roomFloor.material = pbr("roomFloorMat", "#594638", 0.04, 0.78);
 roomFloor.receiveShadows = true;
+roomFloor.checkCollisions = true;
 const backWall = MeshBuilder.CreateBox("livingRoomBackWall", { width: 30, height: 12, depth: 0.35 }, scene);
 backWall.position.set(0, 4.2, 11.8); backWall.material = roomWall;
+backWall.checkCollisions = true; backWall.isPickable = false;
 const leftWall = MeshBuilder.CreateBox("livingRoomLeftWall", { width: 0.35, height: 12, depth: 24 }, scene);
 leftWall.position.set(-14.8, 4.2, 0); leftWall.material = roomWall;
+leftWall.checkCollisions = true; leftWall.isPickable = false;
 
 // A built-in walnut bookcase adds lived-in detail to the side of the room.
 const bookcaseBack = MeshBuilder.CreateBox("bookcaseBack", { width: 0.22, height: 5.8, depth: 6.5 }, scene);
@@ -131,6 +141,7 @@ shelfLevels.slice(0, 4).forEach((y, row) => {
 
 const rightWall = MeshBuilder.CreateBox("livingRoomRightWall", { width: 0.35, height: 12, depth: 24 }, scene);
 rightWall.position.set(14.8, 4.2, 0); rightWall.material = roomWall;
+rightWall.checkCollisions = true; rightWall.isPickable = false;
 
 // Tall window, divided into elegant panes, with heavy warm-toned curtains.
 const windowFrame = MeshBuilder.CreateBox("livingRoomWindowFrame", { width: 0.2, height: 4.5, depth: 6.4 }, scene);
@@ -379,9 +390,17 @@ seatPositions.forEach((pos, i) => {
   inner.position.set(pos.x, 0.19, pos.z);
   inner.material = brass;
 
-  const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.65, height: 0.055, depth: 0.42 }, scene);
-  plaque.position.set(pos.x * 0.7, 0.205, pos.z * 0.7);
+  const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.7, height: 0.48, depth: 0.09 }, scene);
+  const nameRadius = 4.92;
+  const nameDirection = new Vector3(pos.x, 0, pos.z).normalize();
+  plaque.position.set(nameDirection.x * nameRadius, 0.53, nameDirection.z * nameRadius);
+  plaque.rotation.y = Math.atan2(-nameDirection.x, -nameDirection.z);
   plaque.material = darkWood;
+  const plaqueRim = MeshBuilder.CreateBox("playerNamePlaqueRim", { width: 1.78, height: 0.56, depth: 0.055 }, scene);
+  plaqueRim.position.copyFrom(plaque.position);
+  plaqueRim.rotation.copyFrom(plaque.rotation);
+  plaqueRim.material = brass;
+  plaqueRim.parent = plaque;
   const texture = new DynamicTexture("playerNameTexture" + i, { width: 512, height: 128 }, scene, true);
   const ctx = texture.getContext();
   ctx.fillStyle = "#2b2119"; ctx.fillRect(0, 0, 512, 128);
@@ -390,11 +409,12 @@ seatPositions.forEach((pos, i) => {
   ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(["YOU", "SARAH", "DAVID", "MOISHE"][i], 256, 66);
   texture.update();
   const label = MeshBuilder.CreatePlane("playerNameLabel" + i, { width: 1.58, height: 0.34, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
-  label.position.set(pos.x * 0.7, 0.239, pos.z * 0.7);
-  label.rotation.x = Math.PI / 2;
+  label.position.set(0, 0, 0.052);
+  label.parent = plaque;
+  label.rotation.y = 0;
   const labelMat = new StandardMaterial("playerNameLabelMat" + i, scene);
   labelMat.diffuseTexture = texture; labelMat.emissiveColor = new Color3(0.25, 0.2, 0.13);
-  labelMat.backFaceCulling = false; label.material = labelMat;
+  labelMat.backFaceCulling = false; labelMat.emissiveColor = new Color3(0.12, 0.09, 0.05); label.material = labelMat;
   seatNameTextures.push({ texture, ctx });
 });
 
@@ -771,8 +791,8 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
 }));
 $("spinButton").addEventListener("click", spinDreidel);
 $("resetCamera").addEventListener("click", () => {
-  camera.setTarget(new Vector3(0, 1.15, 0));
-  camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 17.5;
+  camera.setTarget(new Vector3(0, 0.9, 0));
+  camera.alpha = -Math.PI / 2.25; camera.beta = 1.16; camera.radius = 19.5;
 });
 $("fullscreen").addEventListener("click", () => {
   const host = $("render-host");
