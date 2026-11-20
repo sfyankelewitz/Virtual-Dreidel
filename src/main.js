@@ -836,6 +836,8 @@ let gameBusy = false;
 let currentSpinPlayer = 0;
 let gameOver = false;
 const names = ["You", "Sarah", "David", "Moishe"];
+let gameWins = Number(localStorage.getItem("virtualDreidelWins") || 0);
+let gameLosses = Number(localStorage.getItem("virtualDreidelLosses") || 0);
 const ownedFinishes = new Set(["walnut"]);
 try {
   const savedFinishes = JSON.parse(localStorage.getItem("virtualDreidelFinishes") || "[]");
@@ -900,6 +902,8 @@ function playCoinChime() {
 
 function refreshUI() {
   $("potValue").textContent = pot;
+  $("gamesWon").textContent = gameWins;
+  $("gamesLost").textContent = gameLosses;
   $("balanceValue").textContent = balances[0];
   if (bet > balances[0]) bet = balances[0] || 1;
   $("betSummary").textContent = "Wager " + bet + " of your " + balances[0] + " coins";
@@ -1033,11 +1037,18 @@ function scheduleAiTurn() {
 function advanceTurn() {
   turn = (turn + 1) % 4;
   if (turn === 0) round += 1;
-  if (balances[0] <= 0) {
+  const activePlayers = balances.map((balance, index) => balance > 0 ? index : -1).filter(index => index >= 0);
+  if (activePlayers.length <= 1 || balances[0] <= 0) {
     gameOver = true;
     const winningBalance = Math.max(...balances);
     const winnerIndex = balances.indexOf(winningBalance);
     const winnerName = names[winnerIndex];
+    if (winnerIndex === 0) gameWins += 1;
+    else gameLosses += 1;
+    try {
+      localStorage.setItem("virtualDreidelWins", String(gameWins));
+      localStorage.setItem("virtualDreidelLosses", String(gameLosses));
+    } catch { /* The current game remains playable if storage is unavailable. */ }
     addActivity("Game over — " + winnerName + " wins with " + winningBalance + " coins.");
     $("sceneResult").textContent = "🏆  " + winnerName.toUpperCase() + " WINS THE GAME!";
     $("sceneResult").classList.add("show");
