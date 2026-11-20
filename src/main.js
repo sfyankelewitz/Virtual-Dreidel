@@ -159,7 +159,7 @@ artFrame.position.set(0, 4.25, 11.48); artFrame.material = brass;
 const artCanvas = MeshBuilder.CreateBox("wallArtCanvas", { width: 3.9, height: 2.5, depth: 0.08 }, scene);
 artCanvas.position.set(0, 4.25, 11.36); artCanvas.material = pbr("artCanvas", "#31433f", 0.0, 0.95);
 const artSun = MeshBuilder.CreateDisc("artSun", { radius: 0.72, tessellation: 64 }, scene);
-artSun.position.set(0, 4.35, 11.29); artSun.material = brass;
+artSun.position.set(0, 4.35, 11.29); artSun.rotation.y = Math.PI; artSun.material = brass;
 
 // A low, generously cushioned sofa sits against the back wall.
 const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, depth: 1.65 }, scene);
@@ -203,9 +203,9 @@ function makeArmchair(x, z, angle) {
   }
   return root;
 }
-makeArmchair(0, -9.0, Math.PI);
-makeArmchair(-8.0, 0, -Math.PI / 2);
-makeArmchair(8.0, 0, Math.PI / 2);
+makeArmchair(0, -9.0, 0);
+makeArmchair(-8.0, 0, Math.PI / 2);
+makeArmchair(8.0, 0, -Math.PI / 2);
 const rug = MeshBuilder.CreateBox("livingRoomRug", { width: 17, height: 0.08, depth: 13 }, scene);
 rug.position.set(0, -1.64, -0.1); rug.material = rugMat;
 const rugBorderMat = pbr("rugBorder", "#a88a63", 0.02, 0.9);
