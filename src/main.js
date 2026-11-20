@@ -161,8 +161,21 @@ tableMat.albedoTexture = woodTexture();
 const darkWood = pbr("darkTableEdge", "#38251b", 0.12, 0.32);
 const brass = pbr("agedBrass", "#b88b4d", 0.82, 0.24);
 const felt = pbr("tableInlay", "#203a31", 0.02, 0.96);
+ felt.albedoTexture = wovenTexture("tableFeltTexture", "#203a31", "rgba(190,210,185,.075)", 5);
 const coinMat = pbr("coinGold", "#e5b957", 0.88, 0.22);
 const coinFaceMat = pbr("coinFaceGold", "#f5d783", 0.9, 0.2);
+const coinMintTexture = new DynamicTexture("coinMintStamp", { width: 256, height: 256 }, scene, true);
+const coinCtx = coinMintTexture.getContext();
+coinCtx.fillStyle = "#f4d98e"; coinCtx.fillRect(0, 0, 256, 256);
+coinCtx.strokeStyle = "#9c6d2e"; coinCtx.lineWidth = 8;
+coinCtx.beginPath(); coinCtx.arc(128, 128, 100, 0, Math.PI * 2); coinCtx.stroke();
+coinCtx.strokeStyle = "#9c6d2e"; coinCtx.lineWidth = 13;
+coinCtx.beginPath();
+coinCtx.moveTo(128, 42); coinCtx.lineTo(203, 174); coinCtx.lineTo(53, 174); coinCtx.closePath(); coinCtx.stroke();
+coinCtx.beginPath();
+coinCtx.moveTo(128, 214); coinCtx.lineTo(53, 82); coinCtx.lineTo(203, 82); coinCtx.closePath(); coinCtx.stroke();
+coinMintTexture.update();
+coinFaceMat.albedoTexture = coinMintTexture;
 const darkMat = pbr("darkMetal", "#302b2a", 0.8, 0.3);
 const roomWall = pbr("warmPlaster", "#b9a48a", 0.02, 0.92);
 const wallTrim = pbr("paintedTrim", "#e2d2b8", 0.04, 0.68);
@@ -493,6 +506,12 @@ for (const [diameter, tube, y] of [[12.72, 0.055, 0.12], [12.25, 0.028, 0.125], 
 const centerFelt = MeshBuilder.CreateCylinder("centerFelt", { diameter: 7.35, height: 0.012, tessellation: 96 }, scene);
 centerFelt.position.y = 0.125;
 centerFelt.material = felt;
+const feltStitch = MeshBuilder.CreateTorus("feltOuterStitch", { diameter: 7.22, thickness: 0.018, tessellation: 128 }, scene);
+feltStitch.position.y = 0.135; feltStitch.material = brass;
+const centerMedallion = MeshBuilder.CreateCylinder("tableCenterMedallion", { diameter: 0.72, height: 0.025, tessellation: 64 }, scene);
+centerMedallion.position.y = 0.145; centerMedallion.material = brass;
+const centerMedallionInset = MeshBuilder.CreateCylinder("tableCenterMedallionInset", { diameter: 0.56, height: 0.028, tessellation: 64 }, scene);
+centerMedallionInset.position.y = 0.17; centerMedallionInset.material = darkWood;
 
 // The communal pot is represented by real, individually modeled coins.
 // Coins are added and removed as the pot changes, so the table always reflects the score.
