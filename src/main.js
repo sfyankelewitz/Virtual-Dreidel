@@ -118,13 +118,14 @@ for (const y of shelfLevels) {
   shelf.position.set(-14.04, y, 0.6); shelf.material = darkWood;
 }
 const bookColors = ["#6d3028", "#31483f", "#283d55", "#8b673d", "#5a3c62", "#9a7b4e", "#3e4845"];
+const bookMaterials = bookColors.map((color, i) => pbr("bookSpine" + i, color, 0.02, 0.78));
 shelfLevels.slice(0, 4).forEach((y, row) => {
   for (let i = 0; i < 13; i++) {
     const h = 0.72 + ((i * 7 + row * 3) % 5) * 0.055;
     const book = MeshBuilder.CreateBox("libraryBook", { width: 0.25, height: h, depth: 0.27 }, scene);
     book.position.set(-13.68, y + 0.075 + h / 2, -2.25 + i * 0.47);
     book.rotation.x = (i % 4 === 0 ? -0.035 : 0.015);
-    book.material = pbr("bookSpine" + row + "-" + i, bookColors[(i + row) % bookColors.length], 0.02, 0.78);
+    book.material = bookMaterials[(i + row) % bookMaterials.length];
   }
 }
 
