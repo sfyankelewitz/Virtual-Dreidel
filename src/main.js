@@ -254,7 +254,7 @@ function letterMaterial(letter, name) {
   const ctx = texture.getContext();
   ctx.clearRect(0, 0, 512, 512);
   ctx.fillStyle = "#f0d5a1";
-  ctx.font = "bold 300px Georgia, serif";
+  ctx.font = "bold 300px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "#fff0c8";
@@ -283,6 +283,13 @@ body.material = bodyMat;
 body.receiveShadows = true;
 shadows.addShadowCaster(body);
 
+// Fine brass shoulder band adds a crafted, hand-finished detail to the body.
+const bodyBand = MeshBuilder.CreateCylinder("dreidelBrassBodyBand", { height: 0.065, diameterTop: 0.9, diameterBottom: 0.9, tessellation: 4 }, scene);
+bodyBand.parent = dreidelRoot;
+bodyBand.position.y = 1.48;
+bodyBand.rotation.y = Math.PI / 4;
+bodyBand.material = brass;
+
 const topCollar = MeshBuilder.CreateCylinder("dreidelShoulder", { height: 0.16, diameterTop: 0.48, diameterBottom: 0.85, tessellation: 4 }, scene);
 topCollar.parent = dreidelRoot; topCollar.position.y = 1.68; topCollar.rotation.y = Math.PI / 4; topCollar.material = brass;
 const stem = MeshBuilder.CreateCylinder("dreidelHandle", { height: 0.43, diameterTop: 0.19, diameterBottom: 0.28, tessellation: 32 }, scene);
@@ -295,12 +302,23 @@ tip.parent = dreidelRoot; tip.position.y = 0.18; tip.rotation.y = Math.PI / 4; t
 const faceLetters = ["נ", "ג", "ה", "ש"];
 const faceRotations = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
 faceLetters.forEach((letter, i) => {
-  const face = MeshBuilder.CreatePlane("hebrewFace" + i, { width: 0.66, height: 0.69, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
-  face.parent = dreidelRoot;
-  face.position.y = 1.03;
   const a = faceRotations[i];
-  face.position.x = Math.sin(a) * 0.39;
-  face.position.z = Math.cos(a) * 0.39;
+  // Raised brass frame, dark inset, and a clear gold Hebrew letter on each side.
+  const frame = MeshBuilder.CreateBox("dreidelFaceFrame" + i, { width: 0.59, height: 0.66, depth: 0.055 }, scene);
+  frame.parent = dreidelRoot;
+  frame.position.set(Math.sin(a) * 0.34, 1.03, Math.cos(a) * 0.34);
+  frame.rotation.y = a;
+  frame.material = brass;
+
+  const inset = MeshBuilder.CreateBox("dreidelFaceInset" + i, { width: 0.51, height: 0.58, depth: 0.035 }, scene);
+  inset.parent = dreidelRoot;
+  inset.position.set(Math.sin(a) * 0.377, 1.03, Math.cos(a) * 0.377);
+  inset.rotation.y = a;
+  inset.material = darkWood;
+
+  const face = MeshBuilder.CreatePlane("hebrewFace" + i, { width: 0.41, height: 0.49, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
+  face.parent = dreidelRoot;
+  face.position.set(Math.sin(a) * 0.401, 1.03, Math.cos(a) * 0.401);
   face.rotation.y = a;
   face.material = letterMaterial(letter, "letter" + i);
 });
