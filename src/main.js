@@ -916,7 +916,10 @@ function addActivity(message) {
   const p = document.createElement("p");
   const icon = document.createElement("span");
   icon.textContent = "✦";
-  p.append(icon, document.createTextNode(" " + message));
+  const stamp = document.createElement("time");
+  stamp.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  stamp.className = "activity-time";
+  p.append(icon, document.createTextNode(" " + message), stamp);
   $("activityLog").prepend(p);
   while ($("activityLog").children.length > 8) $("activityLog").lastElementChild.remove();
 }
