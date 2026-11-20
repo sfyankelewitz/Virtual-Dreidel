@@ -809,6 +809,12 @@ let gameBusy = false;
 let currentSpinPlayer = 0;
 let gameOver = false;
 const names = ["You", "Sarah", "David", "Moishe"];
+try {
+  const savedNames = JSON.parse(localStorage.getItem("virtualDreidelNames") || "null");
+  if (Array.isArray(savedNames) && savedNames.length === 4) {
+    savedNames.forEach((name, i) => { if (typeof name === "string" && name.trim()) names[i] = name.slice(0, 18); });
+  }
+} catch { /* Keep default player names if local storage is unavailable. */ }
 const letters = ["נ", "ג", "ה", "ש"];
 const resultNames = { "נ": "NUN — Nothing happens", "ג": "GIMEL — Take the whole pot!", "ה": "HEY — Take half the pot", "ש": "SHIN — Add one coin to the pot" };
 const $ = id => document.getElementById(id);
@@ -1106,6 +1112,7 @@ document.querySelectorAll(".rename-player").forEach(button => button.addEventLis
   const answer = window.prompt("Enter a name for this player:", names[index]);
   if (answer && answer.trim()) {
     names[index] = answer.trim().slice(0, 18);
+    try { localStorage.setItem("virtualDreidelNames", JSON.stringify(names)); } catch { /* Local play still works without storage. */ }
     refreshUI();
     addActivity(names[index] + " is now at the table.");
   }
