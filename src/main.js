@@ -35,14 +35,14 @@ try {
   console.warn("Virtual Dreidel: using studio reflections; room HDRI could not be initialized.", error);
 }
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 16.4, new Vector3(0, 0.8, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.34, 19.0, new Vector3(0, 0.05, 0), scene);
 camera.attachControl(canvas, true);
 // Keep the camera inside a deliberate cinematic viewing arc. This prevents
 // orbiting through the walls and keeps the table framed during play.
-camera.lowerRadiusLimit = 15.2;
-camera.upperRadiusLimit = 19.2;
-camera.lowerBetaLimit = 0.92;
-camera.upperBetaLimit = 1.28;
+camera.lowerRadiusLimit = 16.5;
+camera.upperRadiusLimit = 23.5;
+camera.lowerBetaLimit = 1.18;
+camera.upperBetaLimit = 1.48;
 camera.lowerAlphaLimit = -2.05;
 camera.upperAlphaLimit = -0.72;
 camera.checkCollisions = false;
@@ -1432,14 +1432,14 @@ $("soundToggle").addEventListener("click", () => {
 });
 function setCameraPreset(mode) {
   if (mode === "table") {
-    camera.setTarget(new Vector3(0, 0.45, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 0.98; desiredCameraRadius = 15.2;
+    camera.setTarget(new Vector3(0, 0.0, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.2; desiredCameraRadius = 16.5;
   } else if (mode === "room") {
-    camera.setTarget(new Vector3(0, 0.8, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; desiredCameraRadius = 16.4;
+    camera.setTarget(new Vector3(0, 0.05, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.34; desiredCameraRadius = 19.0;
   } else {
     camera.setTarget(new Vector3(0, 0.8, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.24; desiredCameraRadius = 19.2;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.42; desiredCameraRadius = 22.5;
   }
 }
 $("resetCamera").addEventListener("click", () => setCameraPreset("room"));
