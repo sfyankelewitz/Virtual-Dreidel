@@ -34,7 +34,15 @@ npm run build
 npm run preview
 ```
 
-## 3D asset credits\n\n- Sofa 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/Sofa_01\n- Arm Chair 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/ArmChair_01\n\nThese models are loaded as 1K glTF assets from Poly Haven. If the CDN is unavailable, the original procedural furniture remains visible as a fallback.\n\n## Technology
+## 3D asset credits
+
+- Sofa 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/Sofa_01
+- Arm Chair 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/ArmChair_01
+- Lebombo HDRI — Greg Zaal, Poly Haven, CC0: https://polyhaven.com/a/lebombo
+
+Furniture models are loaded as 1K glTF assets. The HDRI supplies warm real-world image-based lighting and reflections. If an external asset is unavailable, the app retains its built-in procedural furniture and studio reflection fallback.
+
+## Technology
 
 - Babylon.js 8
 - Vite 6
