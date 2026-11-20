@@ -1,9 +1,10 @@
 import "./style.css";
+import "@babylonjs/loaders/glTF";
 import {
   Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4,
   HemisphericLight, DirectionalLight, PointLight, MeshBuilder, PBRMaterial,
   StandardMaterial, DynamicTexture, TransformNode, ShadowGenerator,
-  GlowLayer, Texture, Scalar, CubeTexture
+  GlowLayer, Texture, Scalar, CubeTexture, SceneLoader
 } from "@babylonjs/core";
 
 const canvas = document.getElementById("renderCanvas");
@@ -1335,6 +1336,55 @@ scene.meshes.forEach(mesh => {
     shadows.addShadowCaster(mesh);
   }
 });
+
+// Real, textured CC0 furniture models from Poly Haven. The procedural furniture
+// remains as a graceful fallback if a model CDN is unavailable.
+async function importPolyHavenModel(assetFolder, fileName, name, position, scale, rotationY = 0, hidePattern = null) {
+  const rootUrl = "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/" + assetFolder + "/";
+  const imported = await SceneLoader.ImportMeshAsync("", rootUrl, fileName, scene);
+  const anchor = new TransformNode(name + "Placement", scene);
+  anchor.position.copyFrom(position);
+  anchor.scaling.setAll(scale);
+  anchor.rotation.y = rotationY;
+  const rootMesh = imported.meshes[0];
+  if (!rootMesh) throw new Error("The " + name + " model contained no mesh root.");
+  rootMesh.parent = anchor;
+  imported.meshes.forEach(mesh => {
+    mesh.receiveShadows = true;
+    if (mesh.getTotalVertices && mesh.getTotalVertices() > 0) shadows.addShadowCaster(mesh);
+  });
+  if (hidePattern) {
+    scene.meshes.forEach(mesh => {
+      if (hidePattern.test(mesh.name)) mesh.setEnabled(false);
+    });
+  }
+  return anchor;
+}
+
+async function loadPremiumRoomFurniture() {
+  try {
+    await importPolyHavenModel(
+      "Sofa_01", "Sofa_01_1k.gltf", "PolyHavenSofa",
+      new Vector3(0, -1.72, 9.45), 4.35, 0, /^(sofa|sofaAccentPillow)/
+    );
+    const chairPlacements = [
+      [new Vector3(0, -1.72, -9.0), Math.PI],
+      [new Vector3(-8.0, -1.72, 0), -Math.PI / 2],
+      [new Vector3(8.0, -1.72, 0), Math.PI / 2]
+    ];
+    for (let i = 0; i < chairPlacements.length; i++) {
+      const [position, rotation] = chairPlacements[i];
+      await importPolyHavenModel(
+        "ArmChair_01", "ArmChair_01_1k.gltf", "PolyHavenArmchair" + (i + 1),
+        position, 2.25, rotation, i === 0 ? /^armchair/ : null
+      );
+    }
+    document.documentElement.classList.add("premium-furniture-loaded");
+    console.info("Virtual Dreidel: Poly Haven sofa and three armchairs loaded (CC0).");
+  } catch (error) {
+    console.warn("Virtual Dreidel: premium furniture could not be loaded; keeping the built-in furniture.", error);
+  }
+}
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
