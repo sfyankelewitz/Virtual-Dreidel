@@ -851,6 +851,22 @@ try {
 } catch { /* Keep default player names if local storage is unavailable. */ }
 const letters = ["נ", "ג", "ה", "ש"];
 const resultNames = { "נ": "NUN — Nothing happens", "ג": "GIMEL — Take the whole pot!", "ה": "HEY — Take half the pot", "ש": "SHIN — Add one coin to the pot" };
+function saveGame() {
+  try { localStorage.setItem("virtualDreidelSavedGame", JSON.stringify({ balances, pot, turn, round, bet })); }
+  catch { /* The current session continues even if storage is unavailable. */ }
+}
+try {
+  const saved = JSON.parse(localStorage.getItem("virtualDreidelSavedGame") || "null");
+  if (saved && Array.isArray(saved.balances) && saved.balances.length === 4 &&
+      saved.balances.every(value => Number.isFinite(value) && value >= 0) &&
+      Number.isFinite(saved.pot) && saved.pot >= 0 &&
+      Number.isInteger(saved.turn) && saved.turn >= 0 && saved.turn < 4 &&
+      Number.isInteger(saved.round) && saved.round > 0) {
+    balances = saved.balances;
+    pot = saved.pot; turn = saved.turn; round = saved.round;
+    bet = Number.isFinite(saved.bet) && saved.bet > 0 ? saved.bet : 1;
+  }
+} catch { /* Start with a fresh table if saved game data is unreadable. */ }
 const $ = id => document.getElementById(id);
 let soundEnabled = true;
 let audioContext = null;
@@ -1055,6 +1071,7 @@ function advanceTurn() {
     $("sceneResult").textContent = "🏆  " + winnerName.toUpperCase() + " WINS THE GAME!";
     $("sceneResult").classList.add("show");
   }
+  saveGame();
   refreshUI();
   if (!gameOver && turn !== 0) scheduleAiTurn();
 }
@@ -1254,6 +1271,7 @@ $("newGame").addEventListener("click", () => {
   $("sceneResult").classList.remove("show");
   $("activityLog").replaceChildren();
   addActivity("A new family game has started.");
+  saveGame();
   refreshUI();
 });
 // Give the room furniture, curtains, books and Chanukah details proper
@@ -1264,6 +1282,7 @@ scene.meshes.forEach(mesh => {
   }
 });
 refreshUI();
+if (!gameOver && turn !== 0) scheduleAiTurn();
 
 engine.runRenderLoop(() => scene.render());
 window.addEventListener("resize", () => engine.resize());
