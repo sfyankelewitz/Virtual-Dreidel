@@ -620,12 +620,14 @@ function updatePlayerCoinStacks() {
       coin.material = coinMat;
       const coinRim = MeshBuilder.CreateTorus("playerReserveCoinRim", { diameter: 0.19, thickness: 0.012, tessellation: 32 }, scene);
       coinRim.parent = coin; coinRim.position.y = 0.024; coinRim.material = brass;
+      const coinFace = MeshBuilder.CreateCylinder("playerReserveCoinFace", { diameter: 0.15, height: 0.006, tessellation: 40 }, scene);
+      coinFace.parent = coin; coinFace.position.y = 0.025; coinFace.material = coinFaceMat;
       shadows.addShadowCaster(coin);
       pile.push(coin);
     }
     while (pile.length > visibleCount) pile.pop().dispose();
     pile.forEach((coin, i) => {
-      coin.position.set(playerCoinSpots[playerIndex][0], 0.205 + i * 0.048, playerCoinSpots[playerIndex][1]);
+      coin.position.set(playerCoinSpots[playerIndex][0] + (i >= 6 ? 0.28 : 0), 0.205 + (i % 6) * 0.048, playerCoinSpots[playerIndex][1]);
       coin.rotation.y = playerIndex * 0.35 + i * 0.08;
     });
   });
@@ -637,8 +639,8 @@ function animateCoinTransfer(playerIndex, towardPlayer, amount) {
   const endSpot = towardPlayer ? playerCoinSpots[towardPlayer.index] : [0, 0];
   const count = Math.min(8, Math.max(1, Math.ceil(amount / 3)));
   for (let i = 0; i < count; i++) {
-    const mesh = MeshBuilder.CreateCylinder("flyingGameCoin", { diameter: 0.24, height: 0.045, tessellation: 32 }, scene);
-    mesh.material = coinMat;
+    const mesh = createCoin("flyingGameCoin");
+    mesh.scaling.setAll(0.58);
     const from = towardPlayer ? new Vector3(0, 0.55 + i * 0.035, 0) : new Vector3(startSpot[0], 0.32 + i * 0.025, startSpot[1]);
     const to = towardPlayer ? new Vector3(endSpot[0], 0.34, endSpot[1]) : new Vector3(0, 0.42, 0);
     mesh.position.copyFrom(from);
