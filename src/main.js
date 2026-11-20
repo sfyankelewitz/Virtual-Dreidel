@@ -1125,6 +1125,17 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
   refreshUI();
 }));
 $("spinButton").addEventListener("click", spinDreidel);
+window.addEventListener("keydown", event => {
+  const target = event.target;
+  if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+  if (event.code === "Space" && !event.repeat) {
+    event.preventDefault();
+    spinDreidel();
+  }
+  if (event.key.toLowerCase() === "n" && !gameBusy) {
+    $("newGame").click();
+  }
+});
 $("soundToggle").addEventListener("click", () => {
   soundEnabled = !soundEnabled;
   $("soundToggle").textContent = soundEnabled ? "♫" : "♪";
