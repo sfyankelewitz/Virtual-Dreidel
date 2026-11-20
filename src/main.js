@@ -13,17 +13,21 @@ scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
 scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
 scene.environmentIntensity = 0.8;
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.16, 19.5, new Vector3(0, 0.9, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.12, 16.4, new Vector3(0, 0.8, 0), scene);
 camera.attachControl(canvas, true);
-camera.lowerRadiusLimit = 14.5;
-camera.upperRadiusLimit = 23;
-camera.lowerBetaLimit = 0.82;
-camera.upperBetaLimit = 1.34;
-camera.checkCollisions = true;
-camera.collisionRadius = new Vector3(0.55, 0.55, 0.55);
-scene.collisionsEnabled = true;
-camera.wheelPrecision = 45;
+// Keep the camera inside a deliberate cinematic viewing arc. This prevents
+// orbiting through the walls and keeps the table framed during play.
+camera.lowerRadiusLimit = 15.2;
+camera.upperRadiusLimit = 19.2;
+camera.lowerBetaLimit = 0.92;
+camera.upperBetaLimit = 1.28;
+camera.lowerAlphaLimit = -2.05;
+camera.upperAlphaLimit = -0.72;
+camera.checkCollisions = false;
+scene.collisionsEnabled = false;
+camera.wheelPrecision = 65;
 camera.panningSensibility = 0;
+camera.inertia = 0.72;
 
 const hemi = new HemisphericLight("ambient", new Vector3(0, 1, 0), scene);
 hemi.intensity = 0.82;
@@ -470,11 +474,16 @@ seatPositions.forEach((pos, i) => {
   inner.position.set(pos.x, 0.19, pos.z);
   inner.material = brass;
 
-  const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.7, height: 0.48, depth: 0.09 }, scene);
-  const nameRadius = 4.92;
+  const plaque = MeshBuilder.CreateBox("playerNamePlaque", { width: 1.7, height: 0.5, depth: 0.11 }, scene);
+  const nameRadius = 5.02;
   const nameDirection = new Vector3(pos.x, 0, pos.z).normalize();
-  plaque.position.set(nameDirection.x * nameRadius, 0.53, nameDirection.z * nameRadius);
-  plaque.rotation.y = Math.atan2(-nameDirection.x, -nameDirection.z);
+  plaque.position.set(nameDirection.x * nameRadius, 0.66, nameDirection.z * nameRadius);
+  // The front face points outward toward the player, never upward like a tabletop label.
+  plaque.rotation.set(0, Math.atan2(nameDirection.x, nameDirection.z), 0);
+  const plaqueStand = MeshBuilder.CreateBox("playerNamePlaqueStand", { width: 0.16, height: 0.34, depth: 0.14 }, scene);
+  plaqueStand.position.set(nameDirection.x * nameRadius, 0.27, nameDirection.z * nameRadius);
+  plaqueStand.rotation.y = plaque.rotation.y;
+  plaqueStand.material = brass;
   plaque.material = darkWood;
   const plaqueRim = MeshBuilder.CreateBox("playerNamePlaqueRim", { width: 1.78, height: 0.56, depth: 0.055 }, scene);
   plaqueRim.position.set(0, 0, -0.055);
@@ -575,7 +584,7 @@ function letterMaterial(letter, name) {
 }
 
 const dreidelRoot = new TransformNode("dreidelRoot", scene);
-dreidelRoot.scaling.setAll(1.78);
+dreidelRoot.scaling.setAll(1.98);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
 const dreidelWoodTexture = woodTexture();
 bodyMat.albedoTexture = dreidelWoodTexture;
@@ -602,8 +611,9 @@ function setDreidelFinish(finish) {
     button.classList.toggle("active", button.dataset.finish === finish);
   });
 }
+// A traditional, broad four-sided wooden body with a restrained taper.
 const body = MeshBuilder.CreateCylinder("fourSidedDreidelBody", {
-  height: 1.28, diameterTop: 1.08, diameterBottom: 0.19, tessellation: 4, subdivisions: 1
+  height: 1.12, diameterTop: 1.34, diameterBottom: 1.16, tessellation: 4, subdivisions: 1
 }, scene);
 body.parent = dreidelRoot;
 body.position.y = 1.0;
@@ -642,19 +652,19 @@ faceLetters.forEach((letter, i) => {
   // Raised brass frame, dark inset, and a clear gold Hebrew letter on each side.
   const frame = MeshBuilder.CreateBox("dreidelFaceFrame" + i, { width: 0.65, height: 0.74, depth: 0.06 }, scene);
   frame.parent = dreidelRoot;
-  frame.position.set(Math.sin(a) * 0.34, 1.03, Math.cos(a) * 0.34);
+  frame.position.set(Math.sin(a) * 0.455, 1.03, Math.cos(a) * 0.455);
   frame.rotation.y = a;
   frame.material = brass;
 
   const inset = MeshBuilder.CreateBox("dreidelFaceInset" + i, { width: 0.57, height: 0.66, depth: 0.04 }, scene);
   inset.parent = dreidelRoot;
-  inset.position.set(Math.sin(a) * 0.377, 1.03, Math.cos(a) * 0.377);
+  inset.position.set(Math.sin(a) * 0.485, 1.03, Math.cos(a) * 0.485);
   inset.rotation.y = a;
   inset.material = darkWood;
 
   const face = MeshBuilder.CreatePlane("hebrewFace" + i, { width: 0.49, height: 0.57, sideOrientation: MeshBuilder.DOUBLESIDE }, scene);
   face.parent = dreidelRoot;
-  face.position.set(Math.sin(a) * 0.412, 1.03, Math.cos(a) * 0.412);
+  face.position.set(Math.sin(a) * 0.512, 1.03, Math.cos(a) * 0.512);
   face.rotation.y = a;
   face.material = letterMaterial(letter, "letter" + i);
 });
@@ -743,7 +753,7 @@ function addActivity(message) {
 function resetDreidel() {
   dreidelRoot.rotation.set(0, 0, 0);
   dreidelRoot.position.set(0, 0.14, 0);
-  dreidelRoot.scaling.setAll(1.55);
+  dreidelRoot.scaling.setAll(1.98);
 }
 
 function chooseAiBet(playerIndex) {
@@ -884,13 +894,13 @@ $("spinButton").addEventListener("click", spinDreidel);
 function setCameraPreset(mode) {
   if (mode === "table") {
     camera.setTarget(new Vector3(0, 0.45, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 0.88; camera.radius = 15.2;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 0.98; camera.radius = 15.2;
   } else if (mode === "room") {
-    camera.setTarget(new Vector3(0, 0.9, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.16; camera.radius = 19.5;
+    camera.setTarget(new Vector3(0, 0.8, 0));
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.12; camera.radius = 16.4;
   } else {
     camera.setTarget(new Vector3(0, 0.8, 0));
-    camera.alpha = -Math.PI / 2.25; camera.beta = 1.28; camera.radius = 22;
+    camera.alpha = -Math.PI / 2.25; camera.beta = 1.24; camera.radius = 19.2;
   }
 }
 $("resetCamera").addEventListener("click", () => setCameraPreset("room"));
