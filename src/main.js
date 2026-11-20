@@ -625,6 +625,8 @@ scene.onBeforeRenderObservable.add(() => {
     dreidelRoot.rotation.y = faceRotations[letters.indexOf(resultLetter)] + Math.PI / 4;
     dreidelRoot.rotation.x = 1.22;
     dreidelRoot.rotation.z = 0.12;
+    dreidelRoot.position.x = 0;
+    dreidelRoot.position.z = 0;
     dreidelRoot.position.y = 0.48;
     settleResult();
   }
@@ -755,6 +757,7 @@ $("fullscreen").addEventListener("click", () => {
 $("newGame").addEventListener("click", () => {
   if (gameBusy) return;
   balances = [100, 100, 100, 100]; pot = 12; turn = 0; round = 1; bet = 1;
+  gameOver = false; currentSpinPlayer = 0;
   resetDreidel();
   $("sceneResult").classList.remove("show");
   $("activityLog").replaceChildren();
