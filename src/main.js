@@ -163,6 +163,19 @@ tableTop.material = tableMat;
 tableTop.receiveShadows = true;
 shadows.addShadowCaster(tableBase);
 shadows.addShadowCaster(tableTop);
+
+// A carved central pedestal makes the round table feel grounded and substantial.
+const pedestal = MeshBuilder.CreateCylinder("tablePedestal", { diameter: 1.75, height: 1.08, tessellation: 64 }, scene);
+pedestal.position.y = -1.02; pedestal.material = darkWood;
+const pedestalFoot = MeshBuilder.CreateCylinder("pedestalFoot", { diameter: 3.35, height: 0.2, tessellation: 96 }, scene);
+pedestalFoot.position.y = -1.58; pedestalFoot.material = darkWood;
+const pedestalFootTrim = MeshBuilder.CreateTorus("pedestalFootBrass", { diameter: 3.22, thickness: 0.035, tessellation: 96 }, scene);
+pedestalFootTrim.position.y = -1.47; pedestalFootTrim.material = brass;
+const pedestalNeck = MeshBuilder.CreateCylinder("pedestalNeck", { diameterTop: 2.05, diameterBottom: 1.7, height: 0.18, tessellation: 64 }, scene);
+pedestalNeck.position.y = -0.48; pedestalNeck.material = brass;
+shadows.addShadowCaster(pedestal);
+shadows.addShadowCaster(pedestalFoot);
+
 for (const [diameter, tube, y] of [[12.72, 0.055, 0.12], [12.25, 0.028, 0.125], [7.45, 0.025, 0.126]]) {
   const ring = MeshBuilder.CreateTorus("brassTableInlay", { diameter, thickness: tube, tessellation: 128 }, scene);
   ring.position.y = y;
