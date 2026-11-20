@@ -921,6 +921,10 @@ function refreshUI() {
   $("potValue").textContent = pot;
   $("gamesWon").textContent = gameWins;
   $("gamesLost").textContent = gameLosses;
+  const todayKey = new Date().toLocaleDateString();
+  const bonusClaimed = localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey;
+  $("dailyBonus").disabled = bonusClaimed || gameOver;
+  $("dailyBonus").textContent = bonusClaimed ? "DAILY BONUS CLAIMED" : "CLAIM DAILY +10 COINS";
   $("balanceValue").textContent = balances[0];
   if (bet > balances[0]) bet = balances[0] || 1;
   $("betSummary").textContent = "Wager " + bet + " of your " + balances[0] + " coins";
@@ -1244,6 +1248,15 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
   refreshUI();
 }));
 $("spinButton").addEventListener("click", spinDreidel);
+$("dailyBonus").addEventListener("click", () => {
+  const todayKey = new Date().toLocaleDateString();
+  if (localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey || gameOver) return;
+  balances[0] += 10;
+  try { localStorage.setItem("virtualDreidelDailyBonusDate", todayKey); } catch { /* Session bonus remains available now. */ }
+  addActivity("You claimed your daily 10-coin bonus.");
+  saveGame();
+  refreshUI();
+});
 window.addEventListener("keydown", event => {
   const target = event.target;
   if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
