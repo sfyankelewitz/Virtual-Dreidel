@@ -98,6 +98,7 @@ const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, heigh
 roomFloor.position.set(0, -1.72, 0);
 roomFloor.material = pbr("roomFloorMat", "#594638", 0.04, 0.78);
 roomFloor.receiveShadows = true;
+roomFloor.receiveShadows = true;
 const backWall = MeshBuilder.CreateBox("livingRoomBackWall", { width: 30, height: 12, depth: 0.35 }, scene);
 backWall.position.set(0, 4.2, -11.8); backWall.material = roomWall;
 const leftWall = MeshBuilder.CreateBox("livingRoomLeftWall", { width: 0.35, height: 12, depth: 24 }, scene);
@@ -117,7 +118,7 @@ artFrame.position.set(0, 4.25, -11.48); artFrame.material = brass;
 const artCanvas = MeshBuilder.CreateBox("wallArtCanvas", { width: 3.9, height: 2.5, depth: 0.08 }, scene);
 artCanvas.position.set(0, 4.25, -11.36); artCanvas.material = pbr("artCanvas", "#31433f", 0.0, 0.95);
 const artSun = MeshBuilder.CreateDisc("artSun", { radius: 0.72, tessellation: 64 }, scene);
-artSun.position.set(0, 4.35, -11.29); artSun.rotation.x = Math.PI / 2; artSun.material = brass;
+artSun.position.set(0, 4.35, -11.29); artSun.material = brass;
 
 // A low, generously cushioned sofa sits against the back wall.
 const sofaBase = MeshBuilder.CreateBox("sofaBase", { width: 7.5, height: 0.72, depth: 1.65 }, scene);
@@ -223,6 +224,7 @@ function letterMaterial(letter, name) {
 }
 
 const dreidelRoot = new TransformNode("dreidelRoot", scene);
+dreidelRoot.scaling.setAll(1.55);
 const bodyMat = pbr("handTurnedWalnut", "#80502d", 0.12, 0.29);
 bodyMat.albedoTexture = woodTexture();
 const body = MeshBuilder.CreateCylinder("fourSidedDreidelBody", {
@@ -257,12 +259,7 @@ faceLetters.forEach((letter, i) => {
   face.material = letterMaterial(letter, "letter" + i);
 });
 
-// A soft shadow-catching floor beneath the table.
-const floor = MeshBuilder.CreateGround("studioFloor", { width: 34, height: 30 }, scene);
-floor.position.y = -1.72;
-const floorMat = pbr("studioFloorMat", "#594638", 0.04, 0.78);
-floor.material = floorMat;
-floor.receiveShadows = true;
+// The room floor above also receives the table and furniture shadows.
 // Register the actual meshes as shadow casters; TransformNode itself is not a mesh.
 shadows.addShadowCaster(topCollar);
 shadows.addShadowCaster(stem);
