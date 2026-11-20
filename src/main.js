@@ -1006,8 +1006,10 @@ function showWinnerCrown(playerIndex) {
     const x = (i - 2) * 0.25;
     const spike = MeshBuilder.CreateCylinder("winnerCrownPoint", { height: 0.42, diameterTop: 0.025, diameterBottom: 0.18, tessellation: 4 }, scene);
     spike.parent = winnerCrown; spike.position.set(x, 0.25, 0); spike.rotation.z = x * 0.32; spike.material = crownGold;
+    shadows.addShadowCaster(spike);
     const jewel = MeshBuilder.CreateSphere("winnerCrownJewel", { diameter: 0.12, segments: 16 }, scene);
     jewel.parent = winnerCrown; jewel.position.set(x, 0.08, 0.39); jewel.material = crownGold;
+    shadows.addShadowCaster(jewel);
   }
   shadows.addShadowCaster(band);
 }
