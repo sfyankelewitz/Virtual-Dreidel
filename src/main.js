@@ -1365,24 +1365,36 @@ async function loadPremiumRoomFurniture() {
   try {
     await importPolyHavenModel(
       "Sofa_01", "Sofa_01_1k.gltf", "PolyHavenSofa",
-      new Vector3(0, -1.72, 9.45), 4.35, 0, /^(sofa|sofaAccentPillow)/
+      new Vector3(0, -1.72, 9.45), 3.8, 0, /^(sofa|sofaAccentPillow)/
     );
-    const chairPlacements = [
-      [new Vector3(0, -1.72, -9.0), Math.PI],
-      [new Vector3(-8.0, -1.72, 0), -Math.PI / 2],
-      [new Vector3(8.0, -1.72, 0), Math.PI / 2]
-    ];
+    console.info("Virtual Dreidel: Poly Haven sofa loaded (CC0).");
+  } catch (error) {
+    console.warn("Virtual Dreidel: sofa model unavailable; keeping the built-in sofa.", error);
+  }
+
+  const chairPlacements = [
+    [new Vector3(0, -1.72, -9.0), Math.PI],
+    [new Vector3(-8.0, -1.72, 0), -Math.PI / 2],
+    [new Vector3(8.0, -1.72, 0), Math.PI / 2]
+  ];
+  const importedChairs = [];
+  try {
     for (let i = 0; i < chairPlacements.length; i++) {
       const [position, rotation] = chairPlacements[i];
-      await importPolyHavenModel(
+      importedChairs.push(await importPolyHavenModel(
         "ArmChair_01", "ArmChair_01_1k.gltf", "PolyHavenArmchair" + (i + 1),
-        position, 2.25, rotation, i === 0 ? /^armchair/ : null
-      );
+        position, 2.25, rotation
+      ));
     }
+    // Replace all three fallback chairs only after all three real models load.
+    scene.meshes.forEach(mesh => {
+      if (/^armchair/i.test(mesh.name)) mesh.setEnabled(false);
+    });
     document.documentElement.classList.add("premium-furniture-loaded");
-    console.info("Virtual Dreidel: Poly Haven sofa and three armchairs loaded (CC0).");
+    console.info("Virtual Dreidel: three Poly Haven armchairs loaded (CC0).");
   } catch (error) {
-    console.warn("Virtual Dreidel: premium furniture could not be loaded; keeping the built-in furniture.", error);
+    importedChairs.forEach(anchor => anchor.dispose(false, true));
+    console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
 refreshUI();
