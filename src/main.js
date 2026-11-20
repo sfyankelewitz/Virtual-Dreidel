@@ -1473,6 +1473,27 @@ scene.meshes.forEach(mesh => {
   }
 });
 
+// Photographic Hanukkah living-room backdrop. The game table and dreidel stay
+// fully interactive in 3D in front of this image; the old block-built room is hidden.
+const photoRoom = MeshBuilder.CreatePlane("photographicLivingRoomBackdrop", {
+  width: 36, height: 20.25, sideOrientation: MeshBuilder.DOUBLESIDE
+}, scene);
+photoRoom.position.set(0, 4.25, 11.15);
+const photoRoomMat = new StandardMaterial("photographicLivingRoomMaterial", scene);
+photoRoomMat.disableLighting = true;
+photoRoomMat.backFaceCulling = false;
+photoRoomMat.emissiveTexture = new Texture("/hanukkah-living-room.jpg", scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+photoRoomMat.diffuseColor = Color3.White();
+photoRoom.material = photoRoomMat;
+photoRoom.isPickable = false;
+
+// The generated photograph replaces the procedural walls, floor, sofa, chairs,
+// lamps, shelves and decor. Keep the actual game table, coins, players and dreidel.
+const photoReplacedRoomParts = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcase|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindow|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsole|consoleLeg|menorah|wallArt|artCanvas|artSun|sofa|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|livingRoomArmchair|armchair|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTable|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade)$/i;
+scene.meshes.forEach(mesh => {
+  if (photoReplacedRoomParts.test(mesh.name)) mesh.setEnabled(false);
+});
+
 // Real, textured CC0 furniture models from Poly Haven. The procedural furniture
 // remains as a graceful fallback if a model CDN is unavailable.
 async function importPolyHavenModel(assetFolder, fileName, name, position, scale, rotationY = 0, hidePattern = null) {
@@ -1533,7 +1554,7 @@ async function loadPremiumRoomFurniture() {
     console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
-loadPremiumRoomFurniture();
+// Furniture is part of the photographic backdrop; do not add duplicate 3D furniture.
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
