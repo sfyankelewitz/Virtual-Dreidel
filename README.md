@@ -2,14 +2,16 @@
 
 A browser-based multiplayer dreidel game for family and friends.
 
-## Current milestone: 3D visual prototype
+## Current milestone: cinematic 3D visual prototype
 
 This repository contains the first real Babylon.js scene:
 
 - Interactive 3D walnut tabletop with procedural wood grain and brass inlay
 - Four-sided dreidel model with Hebrew letters (נ ג ה ש)
 - Camera orbit and zoom
-- Lighting, shadows, materials and a spin animation
+- Lighting, filtered shadows, HDR image-based reflections, PBR surface detail and a spin animation
+- Procedural normal maps for walnut, brass, felt, upholstery, linen and plaster
+- Cinematic post-processing with antialiasing and restrained highlight bloom
 - Local demo turns, bets, coin pot and game activity
 
 The current version is a **single-browser prototype**. Player names and balances are local demo data. Internet multiplayer, real accounts, saved inventory, live video/audio and server-authoritative physics are planned future milestones.
