@@ -583,12 +583,15 @@ function refreshUI() {
     ctx.clearRect(0, 0, 512, 128);
     ctx.fillStyle = "#2b2119"; ctx.fillRect(0, 0, 512, 128);
     ctx.strokeStyle = i === turn && !gameOver ? "#f2c879" : "#c39a5e";
-    ctx.lineWidth = i === turn && !gameOver ? 12 : 7; ctx.strokeRect(5, 5, 502, 118);
+    ctx.lineWidth = i === turn && !gameOver ? 12 : 7;
+    ctx.strokeRect(5, 5, 502, 118);
     ctx.fillStyle = i === turn && !gameOver ? "#fff0c9" : "#f3dfb9";
-    ctx.font = "bold 58px Georgia, serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = "bold 58px Georgia, serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(names[i].toUpperCase(), 256, 66);
     texture.update();
-    seatMarkers[i].material.emissiveColor = i === turn && !gameOver ? new Color3(0.18, 0.1, 0.025) : new Color3(0, 0, 0);
+    seatMarkers[i].material.emissiveColor = i === turn && !gameOver ?
+      new Color3(0.18, 0.1, 0.025) : new Color3(0, 0, 0);
   });
 }
 
@@ -610,7 +613,6 @@ function resetDreidel() {
 function chooseAiBet(playerIndex) {
   const affordable = [10, 5, 2, 1].filter(amount => amount <= balances[playerIndex]);
   if (!affordable.length) return 0;
-  // Opponents vary their risk appetite instead of always wagering the same amount.
   const roll = Math.random();
   const preference = roll < 0.12 ? 10 : roll < 0.34 ? 5 : roll < 0.68 ? 2 : 1;
   return affordable.find(amount => amount <= preference) || affordable[affordable.length - 1];
@@ -648,8 +650,7 @@ function scheduleAiTurn() {
       advanceTurn();
       return;
     }
-    const wager = chooseAiBet(turn);
-    beginSpin(turn, wager);
+    beginSpin(turn, chooseAiBet(turn));
   }, 1050);
 }
 
@@ -672,8 +673,6 @@ scene.onBeforeRenderObservable.add(() => {
   const progress = Math.min(spinElapsed / spinDuration, 1);
   const decay = Math.pow(1 - progress, 1.65);
   dreidelRoot.rotation.y += spinSpeed * decay * dt;
-  // As the spin loses speed, the top begins a wider precessing wobble.
-  // The motion remains scripted for now; a physics engine can replace it later.
   const wobbleGrowth = Math.pow(1 - decay, 0.78);
   const wobbleSize = 0.035 + wobbleGrowth * 0.62;
   const precession = spinElapsed * (2.2 + (1 - decay) * 2.8);
@@ -722,86 +721,6 @@ function settleResult() {
   advanceTurn();
 }
 
-document.querySelectorAll(".bet-option").forEach(button => {
-    const amount = Number(button.dataset.bet);
-    button.classList.toggle("active", amount === bet);
-    button.disabled = gameBusy || turn !== 0 || amount > balances[0];
-  });
-}
-
-function addActivity(message) {
-  const p = document.createElement("p");
-  const icon = document.createElement("span");
-  icon.textContent = "✦";
-  p.append(icon, document.createTextNode(" " + message));
-  $("activityLog").prepend(p);
-  while ($("activityLog").children.length > 6) $("activityLog").lastElementChild.remove();
-}
-
-function resetDreidel() {
-  dreidelRoot.rotation.set(0, 0, 0);
-  dreidelRoot.position.set(0, 0.14, 0);
-  dreidelRoot.scaling.setAll(1.55);
-}
-
-function spinDreidel() {
-  if (gameBusy || turn !== 0 || balances[0] < bet) return;
-  gameBusy = true;
-  balances[0] -= bet;
-  pot += bet;
-  spinElapsed = 0;
-  spinDuration = 4.1 + Math.random() * 0.7;
-  spinSpeed = 23 + Math.random() * 5;
-  resultLetter = letters[Math.floor(Math.random() * letters.length)];
-  resetDreidel();
-  spinning = true;
-  $("sceneResult").classList.remove("show");
-  addActivity("You placed " + bet + " coin" + (bet === 1 ? "" : "s") + " and spun.");
-  refreshUI();
-}
-
-scene.onBeforeRenderObservable.add(() => {
-  const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
-  if (!spinning) return;
-  spinElapsed += dt;
-  const progress = Math.min(spinElapsed / spinDuration, 1);
-  const decay = Math.pow(1 - progress, 1.65);
-  dreidelRoot.rotation.y += spinSpeed * decay * dt;
-  const wobble = (0.025 + (1 - decay) * 0.22) * Math.sin(spinElapsed * 17);
-  dreidelRoot.rotation.x = wobble * decay + Math.sin(spinElapsed * 8) * (1 - decay) * 0.07;
-  dreidelRoot.rotation.z = Math.cos(spinElapsed * 13) * (1 - decay) * 0.09;
-  dreidelRoot.position.y = 0.14 + Math.abs(Math.sin(spinElapsed * 20)) * 0.035 * decay;
-  if (progress >= 1) {
-    spinning = false;
-    // Settle with a slight lean. The selected letter is shown in the result banner.
-    dreidelRoot.rotation.y = faceRotations[letters.indexOf(resultLetter)] + Math.PI / 4;
-    dreidelRoot.rotation.x = 1.22;
-    dreidelRoot.rotation.z = 0.12;
-    dreidelRoot.position.y = 0.48;
-    settleResult();
-  }
-});
-
-function settleResult() {
-  let message = "";
-  if (resultLetter === "ג") {
-    balances[0] += pot; message = "You collected " + pot + " coins!"; pot = 0;
-  } else if (resultLetter === "ה") {
-    const take = Math.ceil(pot / 2); balances[0] += take; pot -= take; message = "You collected " + take + " coins.";
-  } else if (resultLetter === "ש") {
-    pot += 1; message = "One extra coin goes into the pot.";
-  } else {
-    message = "No change. Your turn is complete.";
-  }
-  $("sceneResult").textContent = resultLetter + "  ·  " + resultNames[resultLetter];
-  $("sceneResult").classList.add("show");
-  addActivity(resultLetter + " — " + message);
-  gameBusy = false;
-  turn = (turn + 1) % 4;
-  if (turn === 0) round += 1;
-  refreshUI();
-}
-
 document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
   setDreidelFinish(button.dataset.finish);
 }));
@@ -821,7 +740,8 @@ $("fullscreen").addEventListener("click", () => {
 });
 $("newGame").addEventListener("click", () => {
   if (gameBusy) return;
-  balances = [100, 100, 100, 100]; pot = 12; turn = 0; round = 1; bet = 1;
+  balances = [100, 100, 100, 100];
+  pot = 12; turn = 0; round = 1; bet = 1;
   gameOver = false; currentSpinPlayer = 0;
   resetDreidel();
   $("sceneResult").classList.remove("show");
