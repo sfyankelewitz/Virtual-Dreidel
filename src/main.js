@@ -922,7 +922,8 @@ function refreshUI() {
   $("gamesWon").textContent = gameWins;
   $("gamesLost").textContent = gameLosses;
   const todayKey = new Date().toLocaleDateString();
-  const bonusClaimed = localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey;
+  let bonusClaimed = false;
+  try { bonusClaimed = localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey; } catch { /* Bonus remains available for this session. */ }
   $("dailyBonus").disabled = bonusClaimed || gameOver;
   $("dailyBonus").textContent = bonusClaimed ? "DAILY BONUS CLAIMED" : "CLAIM DAILY +10 COINS";
   $("balanceValue").textContent = balances[0];
@@ -1250,7 +1251,9 @@ document.querySelectorAll(".bet-option").forEach(button => button.addEventListen
 $("spinButton").addEventListener("click", spinDreidel);
 $("dailyBonus").addEventListener("click", () => {
   const todayKey = new Date().toLocaleDateString();
-  if (localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey || gameOver) return;
+  let alreadyClaimed = false;
+  try { alreadyClaimed = localStorage.getItem("virtualDreidelDailyBonusDate") === todayKey; } catch { /* Continue with a session-only reward. */ }
+  if (alreadyClaimed || gameOver) return;
   balances[0] += 10;
   try { localStorage.setItem("virtualDreidelDailyBonusDate", todayKey); } catch { /* Session bonus remains available now. */ }
   addActivity("You claimed your daily 10-coin bonus.");
