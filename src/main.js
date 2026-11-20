@@ -794,6 +794,8 @@ shadows.addShadowCaster(handleGrip);
 shadows.addShadowCaster(tip);
 
 let spinning = false;
+let falling = false;
+let fallElapsed = 0;
 let spinElapsed = 0;
 let spinDuration = 4.2;
 let spinSpeed = 0;
@@ -871,6 +873,7 @@ function addActivity(message) {
 }
 
 function resetDreidel() {
+  spinning = false; falling = false; fallElapsed = 0;
   dreidelRoot.rotation.set(0, 0, 0);
   dreidelRoot.position.set(0, 0.14, 0);
   dreidelRoot.scaling.setAll(1.98);
@@ -902,6 +905,7 @@ function beginSpin(playerIndex, wager) {
   pot += wager;
   animateCoinTransfer(playerIndex, null, wager);
   spinElapsed = 0;
+  falling = false; fallElapsed = 0;
   spinDuration = (playerIndex === 0 ? 4.0 : 3.25) + Math.random() * 0.65;
   spinSpeed = 24 + Math.random() * 7;
   resultLetter = letters[Math.floor(Math.random() * letters.length)];
@@ -963,6 +967,23 @@ scene.onBeforeRenderObservable.add(() => {
       celebrationMaterial.alpha = 0.85;
     }
   }
+  if (falling) {
+    fallElapsed += dt;
+    const fallProgress = Math.min(fallElapsed / 0.72, 1);
+    const ease = fallProgress * fallProgress * (3 - 2 * fallProgress);
+    const bounce = Math.sin(fallProgress * Math.PI) * 0.17;
+    dreidelRoot.rotation.x = 1.22 * ease;
+    dreidelRoot.rotation.z = 0.12 * ease;
+    dreidelRoot.position.y = 0.14 + bounce + 0.18 * (1 - ease);
+    if (fallProgress >= 1) {
+      falling = false;
+      dreidelRoot.rotation.x = 1.22;
+      dreidelRoot.rotation.z = 0.12;
+      dreidelRoot.position.y = 0.52;
+      settleResult();
+    }
+    return;
+  }
   if (!spinning) return;
   spinElapsed += dt;
   const progress = Math.min(spinElapsed / spinDuration, 1);
@@ -979,12 +1000,10 @@ scene.onBeforeRenderObservable.add(() => {
   if (progress >= 1) {
     spinning = false;
     dreidelRoot.rotation.y = faceRotations[letters.indexOf(resultLetter)] + Math.PI / 4;
-    dreidelRoot.rotation.x = 1.22;
-    dreidelRoot.rotation.z = 0.12;
     dreidelRoot.position.x = 0;
     dreidelRoot.position.z = 0;
-    dreidelRoot.position.y = 0.52;
-    settleResult();
+    falling = true;
+    fallElapsed = 0;
   }
 });
 
