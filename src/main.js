@@ -611,7 +611,7 @@ function letterMaterial(letter, name) {
   const ctx = texture.getContext();
   ctx.clearRect(0, 0, 512, 512);
   ctx.fillStyle = "#f0d5a1";
-  ctx.font = "bold 340px Arial, sans-serif";
+  ctx.font = "bold 390px Arial, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.shadowColor = "#fff0c8";
@@ -665,6 +665,18 @@ body.material = bodyMat;
 body.receiveShadows = true;
 shadows.addShadowCaster(body);
 
+// Slim square brass ferrules protect the top and bottom edges of the wooden body.
+for (const [y, diameter, height] of [[0.47, 1.18, 0.065], [1.53, 1.34, 0.065]]) {
+  const ferrule = MeshBuilder.CreateCylinder("dreidelSquareFerrule", {
+    height, diameterTop: diameter, diameterBottom: diameter, tessellation: 4
+  }, scene);
+  ferrule.parent = dreidelRoot;
+  ferrule.position.y = y;
+  ferrule.rotation.y = Math.PI / 4;
+  ferrule.material = brass;
+  shadows.addShadowCaster(ferrule);
+}
+
 // Fine brass shoulder band adds a crafted, hand-finished detail to the body.
 const bodyBand = MeshBuilder.CreateCylinder("dreidelBrassBodyBand", { height: 0.065, diameterTop: 0.9, diameterBottom: 0.9, tessellation: 4 }, scene);
 bodyBand.parent = dreidelRoot;
@@ -677,6 +689,8 @@ const topCollar = MeshBuilder.CreateCylinder("dreidelShoulder", { height: 0.16, 
 topCollar.parent = dreidelRoot; topCollar.position.y = 1.68; topCollar.rotation.y = Math.PI / 4; topCollar.material = brass;
 const stem = MeshBuilder.CreateCylinder("dreidelHandle", { height: 0.43, diameterTop: 0.19, diameterBottom: 0.28, tessellation: 32 }, scene);
 stem.parent = dreidelRoot; stem.position.y = 1.94; stem.material = bodyMat;
+const handleGrip = MeshBuilder.CreateSphere("dreidelHandleGrip", { diameter: 0.3, segments: 32 }, scene);
+handleGrip.parent = dreidelRoot; handleGrip.position.y = 2.02; handleGrip.scaling.y = 0.72; handleGrip.material = bodyMat;
 const stemCap = MeshBuilder.CreateSphere("handleCap", { diameter: 0.25, segments: 24 }, scene);
 stemCap.parent = dreidelRoot; stemCap.position.y = 2.17; stemCap.material = brass;
 const tip = MeshBuilder.CreateCylinder("dreidelPoint", { height: 0.32, diameterTop: 0.24, diameterBottom: 0.025, tessellation: 4 }, scene);
@@ -717,6 +731,7 @@ faceLetters.forEach((letter, i) => {
 shadows.addShadowCaster(topCollar);
 shadows.addShadowCaster(stem);
 shadows.addShadowCaster(stemCap);
+shadows.addShadowCaster(handleGrip);
 shadows.addShadowCaster(tip);
 
 let spinning = false;
