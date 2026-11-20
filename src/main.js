@@ -12,7 +12,7 @@ import {
 const canvas = document.getElementById("renderCanvas");
 const engine = new Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true, antialias: true });
 const scene = new Scene(engine);
-scene.clearColor = new Color4(0.075, 0.078, 0.095, 1);
+scene.clearColor = new Color4(0.12, 0.16, 0.27, 1);
 scene.environmentTexture = CubeTexture.CreateFromPrefilteredData("https://assets.babylonjs.com/environments/environmentSpecular.env", scene);
 scene.environmentIntensity = 1.0;
 
@@ -35,14 +35,14 @@ try {
   console.warn("Virtual Dreidel: using studio reflections; room HDRI could not be initialized.", error);
 }
 
-const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.34, 19.0, new Vector3(0, 0.05, 0), scene);
+const camera = new ArcRotateCamera("camera", -Math.PI / 2.25, 1.22, 17.2, new Vector3(0, 0.25, 0), scene);
 camera.attachControl(canvas, true);
 // Keep the camera inside a deliberate cinematic viewing arc. This prevents
 // orbiting through the walls and keeps the table framed during play.
-camera.lowerRadiusLimit = 16.5;
-camera.upperRadiusLimit = 23.5;
-camera.lowerBetaLimit = 1.18;
-camera.upperBetaLimit = 1.48;
+camera.lowerRadiusLimit = 15.5;
+camera.upperRadiusLimit = 20.5;
+camera.lowerBetaLimit = 1.02;
+camera.upperBetaLimit = 1.4;
 camera.lowerAlphaLimit = -2.05;
 camera.upperAlphaLimit = -0.72;
 camera.checkCollisions = false;
@@ -54,17 +54,17 @@ let desiredCameraRadius = camera.radius;
 let returnCameraRadius = camera.radius;
 
 const hemi = new HemisphericLight("ambient", new Vector3(0, 1, 0), scene);
-hemi.intensity = 0.68;
+hemi.intensity = 0.95;
 hemi.diffuse = new Color3(1, 0.88, 0.72);
 hemi.groundColor = new Color3(0.18, 0.15, 0.13);
 const key = new DirectionalLight("warmKey", new Vector3(-5, -9, 6), scene);
 key.position = new Vector3(5, 10, -5);
-key.intensity = 1.45;
+key.intensity = 1.15;
 key.diffuse = new Color3(1, 0.82, 0.61);
 key.specular = new Color3(1, 0.9, 0.72);
 const tableFill = new PointLight("tableSoftboxFill", new Vector3(-1.5, 7.5, -1.2), scene);
 tableFill.diffuse = new Color3(1, 0.84, 0.66);
-tableFill.intensity = 0.32;
+tableFill.intensity = 0.55;
 tableFill.range = 15;
 const turnSpot = new PointLight("activePlayerSpotlight", new Vector3(0, 4.2, -5.5), scene);
 turnSpot.diffuse = new Color3(1, 0.77, 0.43); turnSpot.intensity = 0.42; turnSpot.range = 7;
@@ -82,12 +82,12 @@ shadows.useBlurExponentialShadowMap = true;
 shadows.blurKernel = 32;
 shadows.usePercentageCloserFiltering = true;
 shadows.filteringQuality = ShadowGenerator.QUALITY_HIGH;
-shadows.setDarkness(0.36);
+shadows.setDarkness(0.22);
 shadows.bias = 0.0005;
 shadows.normalBias = 0.025;
 scene.imageProcessingConfiguration.toneMappingEnabled = true;
-scene.imageProcessingConfiguration.exposure = 1.08;
-scene.imageProcessingConfiguration.contrast = 1.22;
+scene.imageProcessingConfiguration.exposure = 1.0;
+scene.imageProcessingConfiguration.contrast = 1.08;
 
 // Cinematic presentation pass: cleaner edges, controlled highlight bloom and
 // HDR tone mapping. Keep the effect restrained so brass and flames glow softly
@@ -100,12 +100,12 @@ renderPipeline.fxaaEnabled = true;
 renderPipeline.imageProcessingEnabled = true;
 renderPipeline.bloomEnabled = true;
 renderPipeline.bloomThreshold = 0.92;
-renderPipeline.bloomWeight = 0.035;
+renderPipeline.bloomWeight = 0.11;
 renderPipeline.bloomKernel = 48;
 renderPipeline.bloomScale = 0.5;
 
 const glow = new GlowLayer("subtleGlow", scene);
-glow.intensity = 0.08;
+glow.intensity = 0.22;
 scene.ambientColor = new Color3(0.16, 0.14, 0.12);
 
 function pbr(name, color, metallic = 0, roughness = 0.55) {
@@ -257,23 +257,23 @@ function woodTexture() {
   return tex;
 }
 
-const tableMat = pbr("walnutTable", "#805536", 0.05, 0.36);
+const tableMat = pbr("walnutTable", "#d88948", 0.02, 0.58);
 tableMat.albedoTexture = woodTexture();
 tableMat.bumpTexture = microSurfaceTexture("walnutTableNormal", "wood");
 tableMat.bumpTexture.level = 0.035;
 tableMat.clearCoat.isEnabled = true;
 tableMat.clearCoat.intensity = 0.48;
 tableMat.clearCoat.roughness = 0.24;
-const darkWood = pbr("darkTableEdge", "#38251b", 0.12, 0.32);
+const darkWood = pbr("darkTableEdge", "#74452f", 0.02, 0.62);
 darkWood.bumpTexture = microSurfaceTexture("darkWalnutNormal", "wood");
 darkWood.bumpTexture.level = 0.025;
 darkWood.clearCoat.isEnabled = true;
 darkWood.clearCoat.intensity = 0.28;
 darkWood.clearCoat.roughness = 0.3;
-const brass = pbr("agedBrass", "#b88b4d", 0.88, 0.2);
+const brass = pbr("agedBrass", "#ffd16a", 0.48, 0.32);
 brass.bumpTexture = microSurfaceTexture("brushedBrassNormal", "wood");
 brass.bumpTexture.level = 0.055;
-const felt = pbr("tableInlay", "#203a31", 0.02, 0.96);
+const felt = pbr("tableInlay", "#267e75", 0.0, 0.9);
  felt.albedoTexture = wovenTexture("tableFeltTexture", "#203a31", "rgba(190,210,185,.075)", 5);
 felt.bumpTexture = microSurfaceTexture("tableFeltNormal", "fabric");
 felt.bumpTexture.level = 0.035;
@@ -299,13 +299,13 @@ coinMat.clearCoat.isEnabled = true;
 coinMat.clearCoat.intensity = 0.32;
 coinMat.clearCoat.roughness = 0.18;
 const darkMat = pbr("darkMetal", "#302b2a", 0.8, 0.3);
-const roomWall = pbr("warmPlaster", "#b9a48a", 0.02, 0.92);
-const wallTrim = pbr("paintedTrim", "#e2d2b8", 0.04, 0.68);
-const upholstery = pbr("deepOliveVelvet", "#536052", 0.02, 0.96);
-const upholsteryLight = pbr("cushionVelvet", "#78816d", 0.02, 0.98);
-const rugMat = pbr("wovenRug", "#6d5142", 0.0, 1);
-const cabinetMat = pbr("sideboardWalnut", "#4b3023", 0.08, 0.42);
-const creamMat = pbr("lampLinen", "#e9d7b5", 0.0, 0.9);
+const roomWall = pbr("warmPlaster", "#5c77bd", 0.0, 0.95);
+const wallTrim = pbr("paintedTrim", "#f8d98c", 0.0, 0.8);
+const upholstery = pbr("deepOliveVelvet", "#d8754e", 0.0, 0.92);
+const upholsteryLight = pbr("cushionVelvet", "#f4bd70", 0.0, 0.94);
+const rugMat = pbr("wovenRug", "#3b7b9d", 0.0, 1);
+const cabinetMat = pbr("sideboardWalnut", "#a75b3e", 0.0, 0.7);
+const creamMat = pbr("lampLinen", "#ffe7a6", 0.0, 0.9);
 const windowGlass = pbr("eveningWindowGlass", "#536c78", 0.22, 0.22);
 const curtainMat = pbr("heavyCurtain", "#8a6b55", 0.0, 0.96);
 // Keep the plaster color calm at game-camera distance; the old dense pixel texture read as visual noise.
@@ -350,7 +350,7 @@ try {
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
 const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
 roomFloor.position.set(0, -1.72, 0);
-const roomFloorMat = pbr("roomFloorMat", "#76563d", 0.02, 0.58);
+const roomFloorMat = pbr("roomFloorMat", "#8c5a50", 0.0, 0.82);
 roomFloorMat.albedoTexture = hardwoodTexture();
 roomFloorMat.bumpTexture = microSurfaceTexture("floorOakNormal", "wood");
 roomFloorMat.bumpTexture.level = 0.025;
@@ -572,7 +572,7 @@ for (const [x, z] of [[0, -9.0], [-8.0, 0], [8.0, 0]]) {
 }
 const rugTexture = new DynamicTexture("wovenRugTexture", { width: 512, height: 512 }, scene, false);
 const rugCtx = rugTexture.getContext();
-rugCtx.fillStyle = "#6d5142"; rugCtx.fillRect(0, 0, 512, 512);
+rugCtx.fillStyle = "#397d9b"; rugCtx.fillRect(0, 0, 512, 512);
 for (let i = 0; i < 512; i += 7) {
   rugCtx.strokeStyle = i % 14 === 0 ? "rgba(225,190,145,.16)" : "rgba(25,17,14,.13)";
   rugCtx.lineWidth = 2;
@@ -583,7 +583,7 @@ rugTexture.update();
 rugMat.albedoTexture = rugTexture;
 const rug = MeshBuilder.CreateBox("livingRoomRug", { width: 17, height: 0.08, depth: 13 }, scene);
 rug.position.set(0, -1.64, -0.1); rug.material = rugMat;
-const rugBorderMat = pbr("rugBorder", "#a88a63", 0.02, 0.9);
+const rugBorderMat = pbr("rugBorder", "#f6c66b", 0.0, 0.85);
 for (const x of [-8.35, 8.35]) {
   const border = MeshBuilder.CreateBox("rugBorder", { width: 0.08, height: 0.025, depth: 12.45 }, scene);
   border.position.set(x, -1.585, -0.1); border.material = rugBorderMat;
@@ -611,38 +611,7 @@ for (const x of [-8.0, 8.0]) {
   lampGlow.diffuse = new Color3(1, 0.68, 0.36); lampGlow.intensity = 0.45; lampGlow.range = 7;
 }
 
-// CINEMATIC LIVING ROOM ART DIRECTION
-// A hand-composed 3D-animated-style environment replaces the primitive room set.
-// The game table, dreidel, coins and player pieces remain fully interactive 3D.
-const cinematicRoom = MeshBuilder.CreatePlane("cinematicHanukkahRoom", {
-  width: 36, height: 20.25, sideOrientation: MeshBuilder.DOUBLESIDE
-}, scene);
-cinematicRoom.position.set(0, 4.25, 11.25);
-const cinematicRoomMaterial = new StandardMaterial("cinematicRoomArtwork", scene);
-cinematicRoomMaterial.disableLighting = true;
-cinematicRoomMaterial.backFaceCulling = false;
-cinematicRoomMaterial.emissiveTexture = new Texture(
-  "/hanukkah-living-room-style.png", scene, true, false, Texture.TRILINEAR_SAMPLINGMODE
-);
-cinematicRoomMaterial.diffuseColor = Color3.White();
-cinematicRoom.material = cinematicRoomMaterial;
-cinematicRoom.isPickable = false;
-
-// Hide the old primitive room set. Do not hide the actual game table or game pieces.
-const oldRoomSet = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcaseBack|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsoleTop|consoleLeg|menorahBase|menorahCenterStem|menorahBranch|menorahCandleCup|menorahCandle|menorahFlame|wallArtFrame|wallArtCanvas|artSun|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade)$/i;
-scene.meshes.forEach(mesh => {
-  if (oldRoomSet.test(mesh.name)) mesh.setEnabled(false);
-});
-
-// Firelight and menorah light animate against the illustrated environment.
-const cinematicFireGlow = new PointLight("cinematicFireGlow", new Vector3(0, 4.1, 10.7), scene);
-cinematicFireGlow.diffuse = new Color3(1, 0.38, 0.12);
-cinematicFireGlow.intensity = 1.15;
-cinematicFireGlow.range = 12;
-const cinematicMenorahGlow = new PointLight("cinematicMenorahGlow", new Vector3(0, 11.3, 10.7), scene);
-cinematicMenorahGlow.diffuse = new Color3(1, 0.62, 0.25);
-cinematicMenorahGlow.intensity = 0.55;
-cinematicMenorahGlow.range = 8;
+// Playful stylized game-room stage; the room is built from animated 3D geometry.
 
 // The table is built as real Babylon meshes, with layered walnut and brass details.
 const tableBase = MeshBuilder.CreateCylinder("tableBase", { diameter: 12.9, height: 0.52, tessellation: 128 }, scene);
@@ -1291,7 +1260,7 @@ let roomFlickerTime = 0;
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
-  roomFlickerTime += dt;\n  cinematicFireGlow.intensity = 1.0 + Math.sin(roomFlickerTime * 7.1) * 0.18 + Math.sin(roomFlickerTime * 13.7) * 0.08;\n  cinematicMenorahGlow.intensity = 0.5 + Math.sin(roomFlickerTime * 9.2) * 0.07;
+  roomFlickerTime += dt;
   if (winnerCrown) { winnerCrown.rotation.y += dt * 0.5; winnerCrown.position.y = 2.65 + Math.sin(roomFlickerTime * 2.2) * 0.08; }
   menorahFlames.forEach((flame, i) => {
     const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
@@ -1566,7 +1535,7 @@ async function loadPremiumRoomFurniture() {
     console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
-// The cinematic room artwork supplies the furniture; keep the 3D game pieces in the foreground.
+loadPremiumRoomFurniture();
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
