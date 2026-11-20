@@ -879,6 +879,8 @@ function refreshUI() {
   $("playerBalance2").textContent = balances[2];
   $("playerBalance3").textContent = balances[3];
   document.querySelectorAll(".player-row").forEach((row, i) => {
+    row.querySelector(".player-name").textContent = names[i];
+    row.querySelector(".player-avatar").textContent = names[i].charAt(0).toUpperCase();
     row.classList.toggle("active", i === turn && !gameOver);
     row.querySelector("small").textContent = balances[i] <= 0 ? "Out of coins" :
       i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") :
@@ -1091,6 +1093,15 @@ function settleResult() {
   advanceTurn();
 }
 
+document.querySelectorAll(".rename-player").forEach(button => button.addEventListener("click", () => {
+  const index = Number(button.dataset.player);
+  const answer = window.prompt("Enter a name for this player:", names[index]);
+  if (answer && answer.trim()) {
+    names[index] = answer.trim().slice(0, 18);
+    refreshUI();
+    addActivity(names[index] + " is now at the table.");
+  }
+}));
 document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
   setDreidelFinish(button.dataset.finish);
 }));
