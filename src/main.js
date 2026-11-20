@@ -1138,6 +1138,13 @@ $("newGame").addEventListener("click", () => {
   addActivity("A new family game has started.");
   refreshUI();
 });
+// Give the room furniture, curtains, books and Chanukah details proper
+// contact shadows so objects feel grounded rather than pasted into the scene.
+scene.meshes.forEach(mesh => {
+  if (/sofa|armchair|sideTable|lamp|window|menorah|console|bookcase|libraryBook|curtain|wallArt|rug|playerNamePlaque/.test(mesh.name)) {
+    shadows.addShadowCaster(mesh);
+  }
+});
 refreshUI();
 
 engine.runRenderLoop(() => scene.render());
