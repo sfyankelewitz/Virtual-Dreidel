@@ -272,17 +272,31 @@ const centerFelt = MeshBuilder.CreateCylinder("centerFelt", { diameter: 7.35, he
 centerFelt.position.y = 0.125;
 centerFelt.material = felt;
 
-// Coin stacks around the central pot.
-function makeCoin(x, z, count = 3) {
-  for (let i = 0; i < count; i++) {
-    const coin = MeshBuilder.CreateCylinder("dreidelCoin", { diameter: 0.46, height: 0.065, tessellation: 48 }, scene);
-    coin.position.set(x + i * 0.035, 0.19 + i * 0.062, z);
-    coin.material = coinMat;
-    coin.rotation.z = (Math.random() - 0.5) * 0.12;
-    shadows.addShadowCaster(coin);
-  }
+// The communal pot is represented by real, individually modeled coins.
+// Coins are added and removed as the pot changes, so the table always reflects the score.
+const potCoinMeshes = [];
+const potCoinSpots = [
+  [-1.42, 0.62], [1.42, -0.62], [0.0, 1.55],
+  [-1.48, -0.9], [1.48, 0.9], [0.0, -1.55]
+];
+function createCoin(name) {
+  const coin = MeshBuilder.CreateCylinder(name, { diameter: 0.46, height: 0.065, tessellation: 48 }, scene);
+  coin.material = coinMat;
+  coin.rotation.x = Math.PI / 2;
+  coin.rotation.z = (Math.random() - 0.5) * 0.08;
+  shadows.addShadowCaster(coin);
+  return coin;
 }
-makeCoin(-1.45, 0.45, 5); makeCoin(1.45, -0.35, 4); makeCoin(0.0, 1.55, 3);
+function updatePotCoins() {
+  while (potCoinMeshes.length < Math.min(pot, 60)) potCoinMeshes.push(createCoin("potCoin"));
+  while (potCoinMeshes.length > Math.min(pot, 60)) potCoinMeshes.pop().dispose();
+  potCoinMeshes.forEach((coin, i) => {
+    const spot = potCoinSpots[i % potCoinSpots.length];
+    const level = Math.floor(i / potCoinSpots.length);
+    coin.position.set(spot[0], 0.205 + level * 0.069, spot[1]);
+    coin.rotation.y = ((i * 37) % 11) * 0.025;
+  });
+}
 const potRing = MeshBuilder.CreateTorus("potMarker", { diameter: 3.0, thickness: 0.03, tessellation: 96 }, scene);
 potRing.position.y = 0.15;
 potRing.material = brass;
@@ -390,13 +404,14 @@ let spinElapsed = 0;
 let spinDuration = 4.2;
 let spinSpeed = 0;
 let resultLetter = "";
-let restingTilt = 0;
 let bet = 1;
 let turn = 0;
 let round = 1;
 let pot = 12;
 let balances = [100, 100, 100, 100];
 let gameBusy = false;
+let currentSpinPlayer = 0;
+let gameOver = false;
 const names = ["You", "Sarah", "David", "Moishe"];
 const letters = ["נ", "ג", "ה", "ש"];
 const resultNames = { "נ": "NUN — Nothing happens", "ג": "GIMEL — Take the whole pot!", "ה": "HEY — Take half the pot", "ש": "SHIN — Add one coin to the pot" };
@@ -407,19 +422,146 @@ function refreshUI() {
   $("balanceValue").textContent = balances[0];
   $("activePlayer").textContent = names[turn];
   $("roundValue").textContent = String(round).padStart(2, "0");
-  $("turnPill").textContent = turn === 0 ? "YOUR TURN" : "WAITING";
-  $("turnNote").textContent = turn === 0 ? "Your turn. Choose your wager and spin." : names[turn] + " is taking a turn in this local demo.";
-  $("spinButton").disabled = gameBusy || turn !== 0 || balances[turn] < bet;
-  $("spinButton").querySelector("span:nth-child(2)").textContent = gameBusy ? "SPINNING…" : turn === 0 ? "SPIN DREIDEL" : names[turn].toUpperCase() + " IS UP";
+  $("turnPill").textContent = gameOver ? "GAME OVER" : turn === 0 ? "YOUR TURN" : "OPPONENT TURN";
+  $("turnNote").textContent = gameOver ? "You're out of coins. Start a new game to play again." :
+    turn === 0 ? "Your turn. Choose your wager and spin." : names[turn] + " is choosing a wager…";
+  $("spinButton").disabled = gameBusy || turn !== 0 || gameOver || balances[0] < bet;
+  $("spinButton").querySelector("span:nth-child(2)").textContent = gameBusy ? "SPINNING…" : gameOver ? "OUT OF COINS" : turn === 0 ? "SPIN DREIDEL" : names[turn].toUpperCase() + " IS UP";
   $("playerBalance0").textContent = balances[0];
   $("playerBalance1").textContent = balances[1];
   $("playerBalance2").textContent = balances[2];
   $("playerBalance3").textContent = balances[3];
   document.querySelectorAll(".player-row").forEach((row, i) => {
-    row.classList.toggle("active", i === turn);
-    row.querySelector("small").textContent = i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") : "Ready";
+    row.classList.toggle("active", i === turn && !gameOver);
+    row.querySelector("small").textContent = balances[i] <= 0 ? "Out of coins" :
+      i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") : "Ready";
   });
   document.querySelectorAll(".bet-option").forEach(button => {
+    const amount = Number(button.dataset.bet);
+    button.classList.toggle("active", amount === bet);
+    button.disabled = gameBusy || turn !== 0 || gameOver || amount > balances[0];
+  });
+  updatePotCoins();
+}
+
+function addActivity(message) {
+  const p = document.createElement("p");
+  const icon = document.createElement("span");
+  icon.textContent = "✦";
+  p.append(icon, document.createTextNode(" " + message));
+  $("activityLog").prepend(p);
+  while ($("activityLog").children.length > 8) $("activityLog").lastElementChild.remove();
+}
+
+function resetDreidel() {
+  dreidelRoot.rotation.set(0, 0, 0);
+  dreidelRoot.position.set(0, 0.14, 0);
+  dreidelRoot.scaling.setAll(1.55);
+}
+
+function chooseAiBet(playerIndex) {
+  const affordable = [10, 5, 2, 1].filter(amount => amount <= balances[playerIndex]);
+  if (!affordable.length) return 0;
+  // Opponents vary their risk appetite instead of always wagering the same amount.
+  const roll = Math.random();
+  const preference = roll < 0.12 ? 10 : roll < 0.34 ? 5 : roll < 0.68 ? 2 : 1;
+  return affordable.find(amount => amount <= preference) || affordable[affordable.length - 1];
+}
+
+function beginSpin(playerIndex, wager) {
+  if (gameBusy || gameOver || wager < 1 || balances[playerIndex] < wager) return;
+  currentSpinPlayer = playerIndex;
+  gameBusy = true;
+  balances[playerIndex] -= wager;
+  pot += wager;
+  spinElapsed = 0;
+  spinDuration = (playerIndex === 0 ? 4.0 : 3.25) + Math.random() * 0.65;
+  spinSpeed = 24 + Math.random() * 7;
+  resultLetter = letters[Math.floor(Math.random() * letters.length)];
+  resetDreidel();
+  spinning = true;
+  $("sceneResult").classList.remove("show");
+  addActivity(names[playerIndex] + " wagered " + wager + " coin" + (wager === 1 ? "" : "s") + " and spun.");
+  refreshUI();
+}
+
+function spinDreidel() {
+  if (turn !== 0 || gameBusy || gameOver || balances[0] < bet) return;
+  beginSpin(0, bet);
+}
+
+function scheduleAiTurn() {
+  if (gameOver || turn === 0) return;
+  window.setTimeout(() => {
+    if (gameBusy || gameOver || turn === 0) return;
+    if (balances[turn] <= 0) {
+      addActivity(names[turn] + " is out of coins and sits this turn out.");
+      advanceTurn();
+      return;
+    }
+    const wager = chooseAiBet(turn);
+    beginSpin(turn, wager);
+  }, 1050);
+}
+
+function advanceTurn() {
+  turn = (turn + 1) % 4;
+  if (turn === 0) round += 1;
+  if (balances[0] <= 0) {
+    gameOver = true;
+    addActivity("Your coins have run out. Start a new game to play again.");
+  }
+  refreshUI();
+  if (!gameOver && turn !== 0) scheduleAiTurn();
+}
+
+scene.onBeforeRenderObservable.add(() => {
+  const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+  if (!spinning) return;
+  spinElapsed += dt;
+  const progress = Math.min(spinElapsed / spinDuration, 1);
+  const decay = Math.pow(1 - progress, 1.65);
+  dreidelRoot.rotation.y += spinSpeed * decay * dt;
+  const wobble = (0.025 + (1 - decay) * 0.22) * Math.sin(spinElapsed * 17);
+  dreidelRoot.rotation.x = wobble * decay + Math.sin(spinElapsed * 8) * (1 - decay) * 0.07;
+  dreidelRoot.rotation.z = Math.cos(spinElapsed * 13) * (1 - decay) * 0.09;
+  dreidelRoot.position.y = 0.14 + Math.abs(Math.sin(spinElapsed * 20)) * 0.035 * decay;
+  if (progress >= 1) {
+    spinning = false;
+    dreidelRoot.rotation.y = faceRotations[letters.indexOf(resultLetter)] + Math.PI / 4;
+    dreidelRoot.rotation.x = 1.22;
+    dreidelRoot.rotation.z = 0.12;
+    dreidelRoot.position.y = 0.48;
+    settleResult();
+  }
+});
+
+function settleResult() {
+  const playerIndex = currentSpinPlayer;
+  let message = "";
+  if (resultLetter === "ג") {
+    balances[playerIndex] += pot;
+    message = names[playerIndex] + " collected " + pot + " coins!";
+    pot = 0;
+  } else if (resultLetter === "ה") {
+    const take = Math.ceil(pot / 2);
+    balances[playerIndex] += take;
+    pot -= take;
+    message = names[playerIndex] + " collected " + take + " coins.";
+  } else if (resultLetter === "ש") {
+    pot += 1;
+    message = "One extra coin goes into the pot.";
+  } else {
+    message = "No change.";
+  }
+  $("sceneResult").textContent = resultLetter + "  ·  " + resultNames[resultLetter];
+  $("sceneResult").classList.add("show");
+  addActivity(resultLetter + " — " + message);
+  gameBusy = false;
+  advanceTurn();
+}
+
+document.querySelectorAll(".bet-option").forEach(button => {
     const amount = Number(button.dataset.bet);
     button.classList.toggle("active", amount === bet);
     button.disabled = gameBusy || turn !== 0 || amount > balances[0];
