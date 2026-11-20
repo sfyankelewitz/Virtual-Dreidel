@@ -101,6 +101,33 @@ function plasterTexture() {
   return tex;
 }
 
+function hardwoodTexture() {
+  const tex = new DynamicTexture("livingRoomHardwood", { width: 1024, height: 1024 }, scene, false);
+  const ctx = tex.getContext();
+  const boards = ["#6d4b35", "#79563d", "#68462f", "#815d42", "#735039"];
+  const rowHeight = 128;
+  for (let row = 0; row < 8; row++) {
+    let x = row % 2 ? -150 : 0;
+    while (x < 1024) {
+      const width = 220 + ((Math.floor((x + 150) / 220) + row * 3) % 3) * 70;
+      ctx.fillStyle = boards[(row * 2 + Math.floor((x + 150) / 180)) % boards.length];
+      ctx.fillRect(x + 2, row * rowHeight + 2, width - 4, rowHeight - 4);
+      ctx.strokeStyle = "rgba(35,20,12,.55)"; ctx.lineWidth = 3;
+      ctx.strokeRect(x + 2, row * rowHeight + 2, width - 4, rowHeight - 4);
+      for (let grain = 0; grain < 9; grain++) {
+        const gy = row * rowHeight + 18 + grain * 12 + Math.random() * 5;
+        ctx.strokeStyle = grain % 3 ? "rgba(225,180,125,.09)" : "rgba(30,17,10,.13)";
+        ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x + 12, gy);
+        ctx.bezierCurveTo(x + width * .3, gy - 4, x + width * .7, gy + 5, x + width - 12, gy);
+        ctx.stroke();
+      }
+      x += width;
+    }
+  }
+  tex.update(); tex.wrapU = Texture.WRAP_ADDRESSMODE; tex.wrapV = Texture.WRAP_ADDRESSMODE;
+  return tex;
+}
+
 function woodTexture() {
   const tex = new DynamicTexture("walnutGrain", { width: 1024, height: 1024 }, scene, false);
   const ctx = tex.getContext();
@@ -157,7 +184,9 @@ tableMat.clearCoat.roughness = 0.28;
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
 const roomFloor = MeshBuilder.CreateGround("livingRoomFloor", { width: 34, height: 30 }, scene);
 roomFloor.position.set(0, -1.72, 0);
-roomFloor.material = pbr("roomFloorMat", "#594638", 0.04, 0.78);
+const roomFloorMat = pbr("roomFloorMat", "#76563d", 0.02, 0.58);
+roomFloorMat.albedoTexture = hardwoodTexture();
+roomFloor.material = roomFloorMat;
 roomFloor.receiveShadows = true;
 roomFloor.checkCollisions = true;
 const backWall = MeshBuilder.CreateBox("livingRoomBackWall", { width: 30, height: 12, depth: 0.35 }, scene);
@@ -286,15 +315,17 @@ for (const x of [-3.65, 3.65]) {
   arm.position.set(x, -1.12, 8.9); arm.material = upholstery;
 }
 for (const x of [-2.45, -0.85, 0.85, 2.45]) {
-  const cushion = MeshBuilder.CreateBox("sofaCushion", { width: 1.48, height: 0.2, depth: 1.25 }, scene);
-  cushion.position.set(x, -0.87, 8.55); cushion.material = upholsteryLight;
+  const cushion = MeshBuilder.CreateSphere("sofaCushion", { diameter: 1, segments: 24 }, scene);
+  cushion.scaling.set(0.78, 0.18, 0.67);
+  cushion.position.set(x, -0.84, 8.55); cushion.material = upholsteryLight;
   const piping = MeshBuilder.CreateBox("sofaCushionPiping", { width: 1.42, height: 0.025, depth: 0.025 }, scene);
   piping.position.set(x, -0.75, 7.94); piping.material = creamMat;
 }
 // Soft accent pillows make the sofa feel lived-in.
 for (const [x, color] of [[-2.65, "#b58b68"], [2.65, "#9b7964"]]) {
   const pillowMat = pbr("sofaAccentPillow", color, 0, 1);
-  const pillow = MeshBuilder.CreateBox("sofaAccentPillow", { width: 0.85, height: 0.72, depth: 0.28 }, scene);
+  const pillow = MeshBuilder.CreateSphere("sofaAccentPillow", { diameter: 1, segments: 24 }, scene);
+  pillow.scaling.set(0.48, 0.43, 0.19);
   pillow.position.set(x, -0.35, 9.02); pillow.rotation.z = x < 0 ? -0.12 : 0.12; pillow.material = pillowMat;
 }
 
@@ -306,8 +337,9 @@ function makeArmchair(x, z, angle) {
   root.rotation.y = angle;
   const seat = MeshBuilder.CreateBox("armchairSeat", { width: 2.45, height: 0.34, depth: 2.0 }, scene);
   seat.parent = root; seat.position.set(0, -0.95, 0); seat.material = upholstery;
-  const cushion = MeshBuilder.CreateBox("armchairSeatCushion", { width: 2.12, height: 0.16, depth: 1.68 }, scene);
-  cushion.parent = root; cushion.position.set(0, -0.72, -0.03); cushion.material = upholsteryLight;
+  const cushion = MeshBuilder.CreateSphere("armchairSeatCushion", { diameter: 1, segments: 24 }, scene);
+  cushion.parent = root; cushion.scaling.set(1.08, 0.18, 0.86);
+  cushion.position.set(0, -0.66, -0.03); cushion.material = upholsteryLight;
   const back = MeshBuilder.CreateBox("armchairBack", { width: 2.45, height: 1.65, depth: 0.38 }, scene);
   back.parent = root; back.position.set(0, 0.08, -0.82); back.material = upholstery;
   for (const side of [-1, 1]) {
