@@ -337,6 +337,37 @@ function updatePlayerCoinStacks() {
   });
 }
 
+const coinFlights = [];
+function animateCoinTransfer(playerIndex, towardPlayer, amount) {
+  const startSpot = playerCoinSpots[playerIndex];
+  const endSpot = towardPlayer ? playerCoinSpots[towardPlayer.index] : [0, 0];
+  const count = Math.min(8, Math.max(1, Math.ceil(amount / 3)));
+  for (let i = 0; i < count; i++) {
+    const mesh = MeshBuilder.CreateCylinder("flyingGameCoin", { diameter: 0.24, height: 0.045, tessellation: 32 }, scene);
+    mesh.material = coinMat;
+    const from = towardPlayer ? new Vector3(0, 0.55 + i * 0.035, 0) : new Vector3(startSpot[0], 0.32 + i * 0.025, startSpot[1]);
+    const to = towardPlayer ? new Vector3(endSpot[0], 0.34, endSpot[1]) : new Vector3(0, 0.42, 0);
+    mesh.position.copyFrom(from);
+    coinFlights.push({ mesh, from, to, age: 0, duration: 0.72 + Math.random() * 0.22, arc: 0.8 + Math.random() * 0.45 });
+  }
+}
+function updateCoinFlights(dt) {
+  for (let i = coinFlights.length - 1; i >= 0; i--) {
+    const flight = coinFlights[i];
+    flight.age += dt;
+    const t = Math.min(flight.age / flight.duration, 1);
+    const eased = t * t * (3 - 2 * t);
+    Vector3.LerpToRef(flight.from, flight.to, eased, flight.mesh.position);
+    flight.mesh.position.y += Math.sin(t * Math.PI) * flight.arc;
+    flight.mesh.rotation.z += dt * 13;
+    flight.mesh.rotation.x += dt * 9;
+    if (t >= 1) {
+      flight.mesh.dispose();
+      coinFlights.splice(i, 1);
+    }
+  }
+}
+
 // Procedural lettering texture: each Hebrew character is painted into its own face texture.
 function letterMaterial(letter, name) {
   const texture = new DynamicTexture(name + "LetterTexture", { width: 512, height: 512 }, scene, true);
@@ -497,6 +528,7 @@ function beginSpin(playerIndex, wager) {
   gameBusy = true;
   balances[playerIndex] -= wager;
   pot += wager;
+  animateCoinTransfer(playerIndex, null, wager);
   spinElapsed = 0;
   spinDuration = (playerIndex === 0 ? 4.0 : 3.25) + Math.random() * 0.65;
   spinSpeed = 24 + Math.random() * 7;
@@ -540,6 +572,7 @@ function advanceTurn() {
 
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+  updateCoinFlights(dt);
   if (!spinning) return;
   spinElapsed += dt;
   const progress = Math.min(spinElapsed / spinDuration, 1);
@@ -563,12 +596,15 @@ function settleResult() {
   const playerIndex = currentSpinPlayer;
   let message = "";
   if (resultLetter === "ג") {
-    balances[playerIndex] += pot;
-    message = names[playerIndex] + " collected " + pot + " coins!";
+    const take = pot;
+    balances[playerIndex] += take;
+    animateCoinTransfer(playerIndex, { index: playerIndex }, take);
+    message = names[playerIndex] + " collected " + take + " coins!";
     pot = 0;
   } else if (resultLetter === "ה") {
     const take = Math.ceil(pot / 2);
     balances[playerIndex] += take;
+    animateCoinTransfer(playerIndex, { index: playerIndex }, take);
     pot -= take;
     message = names[playerIndex] + " collected " + take + " coins.";
   } else if (resultLetter === "ש") {
