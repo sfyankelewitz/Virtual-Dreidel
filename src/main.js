@@ -611,6 +611,39 @@ for (const x of [-8.0, 8.0]) {
   lampGlow.diffuse = new Color3(1, 0.68, 0.36); lampGlow.intensity = 0.45; lampGlow.range = 7;
 }
 
+// CINEMATIC LIVING ROOM ART DIRECTION
+// A hand-composed 3D-animated-style environment replaces the primitive room set.
+// The game table, dreidel, coins and player pieces remain fully interactive 3D.
+const cinematicRoom = MeshBuilder.CreatePlane("cinematicHanukkahRoom", {
+  width: 36, height: 20.25, sideOrientation: MeshBuilder.DOUBLESIDE
+}, scene);
+cinematicRoom.position.set(0, 4.25, 11.25);
+const cinematicRoomMaterial = new StandardMaterial("cinematicRoomArtwork", scene);
+cinematicRoomMaterial.disableLighting = true;
+cinematicRoomMaterial.backFaceCulling = false;
+cinematicRoomMaterial.emissiveTexture = new Texture(
+  "/hanukkah-living-room-style.png", scene, true, false, Texture.TRILINEAR_SAMPLINGMODE
+);
+cinematicRoomMaterial.diffuseColor = Color3.White();
+cinematicRoom.material = cinematicRoomMaterial;
+cinematicRoom.isPickable = false;
+
+// Hide the old primitive room set. Do not hide the actual game table or game pieces.
+const oldRoomSet = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcaseBack|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsoleTop|consoleLeg|menorahBase|menorahCenterStem|menorahBranch|menorahCandleCup|menorahCandle|menorahFlame|wallArtFrame|wallArtCanvas|artSun|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade)$/i;
+scene.meshes.forEach(mesh => {
+  if (oldRoomSet.test(mesh.name)) mesh.setEnabled(false);
+});
+
+// Firelight and menorah light animate against the illustrated environment.
+const cinematicFireGlow = new PointLight("cinematicFireGlow", new Vector3(0, 4.1, 10.7), scene);
+cinematicFireGlow.diffuse = new Color3(1, 0.38, 0.12);
+cinematicFireGlow.intensity = 1.15;
+cinematicFireGlow.range = 12;
+const cinematicMenorahGlow = new PointLight("cinematicMenorahGlow", new Vector3(0, 11.3, 10.7), scene);
+cinematicMenorahGlow.diffuse = new Color3(1, 0.62, 0.25);
+cinematicMenorahGlow.intensity = 0.55;
+cinematicMenorahGlow.range = 8;
+
 // The table is built as real Babylon meshes, with layered walnut and brass details.
 const tableBase = MeshBuilder.CreateCylinder("tableBase", { diameter: 12.9, height: 0.52, tessellation: 128 }, scene);
 tableBase.position.y = -0.28;
@@ -1258,7 +1291,7 @@ let roomFlickerTime = 0;
 scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
-  roomFlickerTime += dt;
+  roomFlickerTime += dt;\n  cinematicFireGlow.intensity = 1.0 + Math.sin(roomFlickerTime * 7.1) * 0.18 + Math.sin(roomFlickerTime * 13.7) * 0.08;\n  cinematicMenorahGlow.intensity = 0.5 + Math.sin(roomFlickerTime * 9.2) * 0.07;
   if (winnerCrown) { winnerCrown.rotation.y += dt * 0.5; winnerCrown.position.y = 2.65 + Math.sin(roomFlickerTime * 2.2) * 0.08; }
   menorahFlames.forEach((flame, i) => {
     const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
@@ -1533,7 +1566,7 @@ async function loadPremiumRoomFurniture() {
     console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
-loadPremiumRoomFurniture();
+// The cinematic room artwork supplies the furniture; keep the 3D game pieces in the foreground.
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
