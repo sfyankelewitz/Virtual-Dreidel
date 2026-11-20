@@ -1397,6 +1397,7 @@ async function loadPremiumRoomFurniture() {
     console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
+loadPremiumRoomFurniture();
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
