@@ -32,7 +32,7 @@ npm run build
 npm run preview
 ```
 
-## Technology
+## 3D asset credits\n\n- Sofa 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/Sofa_01\n- Arm Chair 01 — Kirill Sannikov, Poly Haven, CC0: https://polyhaven.com/a/ArmChair_01\n\nThese models are loaded as 1K glTF assets from Poly Haven. If the CDN is unavailable, the original procedural furniture remains visible as a fallback.\n\n## Technology
 
 - Babylon.js 8
 - Vite 6
