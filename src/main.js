@@ -815,6 +815,11 @@ let gameBusy = false;
 let currentSpinPlayer = 0;
 let gameOver = false;
 const names = ["You", "Sarah", "David", "Moishe"];
+const ownedFinishes = new Set(["walnut"]);
+try {
+  const savedFinishes = JSON.parse(localStorage.getItem("virtualDreidelFinishes") || "[]");
+  if (Array.isArray(savedFinishes)) savedFinishes.forEach(finish => ownedFinishes.add(finish));
+} catch { /* Default to the walnut finish. */ }
 try {
   const savedNames = JSON.parse(localStorage.getItem("virtualDreidelNames") || "null");
   if (Array.isArray(savedNames) && savedNames.length === 4) {
@@ -899,7 +904,10 @@ function refreshUI() {
       ["Your seat", "Careful player", "Bold player", "Wildcard"][i];
   });
   document.querySelectorAll(".finish-option").forEach(button => {
+    const owned = ownedFinishes.has(button.dataset.finish);
     button.classList.toggle("active", button.dataset.finish === selectedFinish);
+    button.classList.toggle("locked", !owned);
+    button.querySelector(".finish-name").textContent = owned ? button.dataset.name : button.dataset.name + " · " + button.dataset.cost;
   });
   document.querySelectorAll(".bet-option").forEach(button => {
     const amount = button.dataset.bet === "all" ? balances[0] : Number(button.dataset.bet);
@@ -1128,7 +1136,20 @@ document.querySelectorAll(".rename-player").forEach(button => button.addEventLis
   }
 }));
 document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
-  setDreidelFinish(button.dataset.finish);
+  const finish = button.dataset.finish;
+  if (!ownedFinishes.has(finish)) {
+    const cost = Number(button.dataset.cost);
+    if (balances[0] < cost) {
+      addActivity("You need " + (cost - balances[0]) + " more coins to unlock " + button.dataset.name + ".");
+      return;
+    }
+    balances[0] -= cost;
+    ownedFinishes.add(finish);
+    try { localStorage.setItem("virtualDreidelFinishes", JSON.stringify([...ownedFinishes])); } catch { /* The current session still retains the unlock. */ }
+    addActivity("Unlocked the " + button.dataset.name + " dreidel finish!");
+    refreshUI();
+  }
+  setDreidelFinish(finish);
 }));
 document.querySelectorAll(".bet-option").forEach(button => button.addEventListener("click", () => {
   bet = button.dataset.bet === "all" ? balances[0] : Number(button.dataset.bet);
