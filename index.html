@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171a22" />
+    <meta name="description" content="A shared virtual dreidel game for family and friends." />
+    <title>Virtual Dreidel — 3D Prototype</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Virtual Dreidel home">
+          <span class="brand-mark">✡</span>
+          <span><strong>VIRTUAL DREIDEL</strong><small>FAMILY GAME NIGHT</small></span>
+        </a>
+        <div class="topbar-right">
+          <span class="room-tag"><i></i> PRIVATE ROOM · YK82</span>
+          <span class="prototype-tag">3D PROTOTYPE 01</span>
+        </div>
+      </header>
+
+      <main>
+        <section class="intro">
+          <div>
+            <p class="eyebrow">THE TABLE IS READY</p>
+            <h1>Let the games begin.</h1>
+            <p class="subhead">A first look at our real-time 3D dreidel world.</p>
+          </div>
+          <div class="player-count"><span class="online-dot"></span><strong>4</strong><span>players at the table</span></div>
+        </section>
+
+        <section class="game-layout">
+          <div class="scene-card">
+            <div class="scene-topline">
+              <span>THE GAME TABLE</span>
+              <span class="scene-hint">Drag to orbit · Scroll to zoom</span>
+            </div>
+            <div id="render-host">
+              <canvas id="renderCanvas" aria-label="Interactive 3D dreidel table"></canvas>
+              <div class="scene-loading" id="sceneLoading">Preparing the table…</div>
+              <div class="scene-result" id="sceneResult" aria-live="polite"></div>
+              <div class="scene-controls">
+                <button class="icon-button" id="resetCamera" title="Reset camera" aria-label="Reset camera">⌖</button>
+                <button class="icon-button" id="fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+              </div>
+              <div class="scene-caption"><span class="caption-dot"></span> LIVE 3D SCENE <span class="caption-separator">·</span> BABYLON.JS</div>
+            </div>
+            <div class="scene-footer">
+              <div class="turn-indicator"><span class="turn-avatar">S</span><span><small>NOW SPINNING</small><strong id="activePlayer">You</strong></span></div>
+              <div class="pot-display"><small>COMMUNAL POT</small><strong><span>✦</span> <b id="potValue">12</b> <em>coins</em></strong></div>
+              <div class="round-display"><small>ROUND</small><strong id="roundValue">01</strong></div>
+            </div>
+          </div>
+
+          <aside class="side-panel">
+            <section class="panel-block">
+              <div class="panel-heading"><div><p class="eyebrow">YOUR TURN</p><h2>Make it count.</h2></div><span class="turn-pill" id="turnPill">YOUR TURN</span></div>
+              <div class="balance-card"><span>YOUR BALANCE</span><strong><b id="balanceValue">100</b><small>✦ coins</small></strong></div>
+              <label class="control-label" for="betAmount">YOUR BET</label>
+              <div class="bet-options" id="betOptions">
+                <button class="bet-option active" data-bet="1">1</button>
+                <button class="bet-option" data-bet="2">2</button>
+                <button class="bet-option" data-bet="5">5</button>
+                <button class="bet-option" data-bet="10">10</button>
+              </div>
+              <button class="spin-button" id="spinButton"><span class="spin-icon">↻</span><span>SPIN DREIDEL</span><span class="spin-arrow">→</span></button>
+              <p class="turn-note" id="turnNote">Your turn. Choose your wager and spin.</p>
+            </section>
+
+            <section class="panel-block players-block">
+              <div class="section-heading"><h3>AT THE TABLE</h3><span>4 PLAYERS</span></div>
+              <div class="player-row active" data-player="0"><span class="player-avatar avatar-gold">S</span><span class="player-info"><strong>You</strong><small>Playing now</small></span><span class="player-balance" id="playerBalance0">100</span></div>
+              <div class="player-row" data-player="1"><span class="player-avatar avatar-rose">S</span><span class="player-info"><strong>Sarah</strong><small>Ready</small></span><span class="player-balance" id="playerBalance1">100</span></div>
+              <div class="player-row" data-player="2"><span class="player-avatar avatar-blue">D</span><span class="player-info"><strong>David</strong><small>Ready</small></span><span class="player-balance" id="playerBalance2">100</span></div>
+              <div class="player-row" data-player="3"><span class="player-avatar avatar-green">M</span><span class="player-info"><strong>Moishe</strong><small>Ready</small></span><span class="player-balance" id="playerBalance3">100</span></div>
+            </section>
+
+            <section class="panel-block history-block">
+              <div class="section-heading"><h3>GAME ACTIVITY</h3><button id="newGame" class="text-button">New game ↗</button></div>
+              <div id="activityLog" class="activity-log"><p><span>✦</span> The family table is open.</p><p><span>✦</span> Four players have joined.</p></div>
+            </section>
+          </aside>
+        </section>
+
+        <section class="below-grid">
+          <div class="feature-note"><span class="note-icon">✧</span><div><strong>A real 3D dreidel, not a flat animation.</strong><p>Orbit the camera, zoom in, and watch the dreidel spin in a Babylon.js scene.</p></div></div>
+          <div class="feature-note"><span class="note-icon">◈</span><div><strong>Our first building block.</strong><p>Multiplayer, live family video, accounts and the marketplace come in later milestones.</p></div></div>
+        </section>
+      </main>
+      <footer><span>VIRTUAL DREIDEL</span><span>BUILT FOR FAMILY, WHEREVER YOU ARE.</span></footer>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
