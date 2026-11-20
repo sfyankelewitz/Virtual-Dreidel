@@ -197,6 +197,21 @@ tableMat.metallic = 0.08;
 tableMat.clearCoat.isEnabled = true;
 tableMat.clearCoat.intensity = 0.32;
 tableMat.clearCoat.roughness = 0.28;
+let selectedTableFinish = "walnut";
+const ownedTableFinishes = new Set(["walnut"]);
+try {
+  const saved = JSON.parse(localStorage.getItem("virtualDreidelTableFinishes") || "[]");
+  if (Array.isArray(saved)) saved.forEach(finish => ownedTableFinishes.add(finish));
+} catch { /* Keep the default walnut tabletop. */ }
+function setTableFinish(finish) {
+  selectedTableFinish = finish;
+  if (finish === "ebony") tableMat.albedoColor = Color3.FromHexString("#51402f");
+  else if (finish === "honey") tableMat.albedoColor = Color3.FromHexString("#d1a06b");
+  else tableMat.albedoColor = Color3.FromHexString("#ffffff");
+  document.querySelectorAll(".table-finish-option").forEach(button => {
+    button.classList.toggle("active", button.dataset.finish === finish);
+  });
+}
 
 
 // A warm, enclosed living-room backdrop gives the table a real sense of place.
@@ -715,6 +730,12 @@ function setDreidelFinish(finish) {
     bodyMat.albedoColor = Color3.FromHexString("#80502d");
     bodyMat.metallic = 0.12; bodyMat.roughness = 0.29;
   }
+  document.querySelectorAll(".table-finish-option").forEach(button => {
+    const owned = ownedTableFinishes.has(button.dataset.finish);
+    button.classList.toggle("active", button.dataset.finish === selectedTableFinish);
+    button.classList.toggle("locked", !owned);
+    button.querySelector(".finish-name").textContent = owned ? button.dataset.name : button.dataset.name + " · " + button.dataset.cost;
+  });
   document.querySelectorAll(".finish-option").forEach(button => {
     button.classList.toggle("active", button.dataset.finish === finish);
   });
@@ -1134,6 +1155,22 @@ document.querySelectorAll(".rename-player").forEach(button => button.addEventLis
     refreshUI();
     addActivity(names[index] + " is now at the table.");
   }
+}));
+document.querySelectorAll(".table-finish-option").forEach(button => button.addEventListener("click", () => {
+  const finish = button.dataset.finish;
+  if (!ownedTableFinishes.has(finish)) {
+    const cost = Number(button.dataset.cost);
+    if (balances[0] < cost) {
+      addActivity("You need " + (cost - balances[0]) + " more coins to unlock the " + button.dataset.name + " table.");
+      return;
+    }
+    balances[0] -= cost;
+    ownedTableFinishes.add(finish);
+    try { localStorage.setItem("virtualDreidelTableFinishes", JSON.stringify([...ownedTableFinishes])); } catch { /* Current session still retains the unlock. */ }
+    addActivity("Unlocked the " + button.dataset.name + " table finish!");
+    refreshUI();
+  }
+  setTableFinish(finish);
 }));
 document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
   const finish = button.dataset.finish;
