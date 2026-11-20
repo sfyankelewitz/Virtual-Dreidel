@@ -291,6 +291,13 @@ coinCtx.beginPath();
 coinCtx.moveTo(128, 214); coinCtx.lineTo(53, 82); coinCtx.lineTo(203, 82); coinCtx.closePath(); coinCtx.stroke();
 coinMintTexture.update();
 coinFaceMat.albedoTexture = coinMintTexture;
+coinMat.bumpTexture = microSurfaceTexture("mintedCoinMetalNormal", "wood");
+coinMat.bumpTexture.level = 0.045;
+coinFaceMat.bumpTexture = microSurfaceTexture("coinFaceReliefNormal", "stone");
+coinFaceMat.bumpTexture.level = 0.035;
+coinMat.clearCoat.isEnabled = true;
+coinMat.clearCoat.intensity = 0.32;
+coinMat.clearCoat.roughness = 0.18;
 const darkMat = pbr("darkMetal", "#302b2a", 0.8, 0.3);
 const roomWall = pbr("warmPlaster", "#b9a48a", 0.02, 0.92);
 const wallTrim = pbr("paintedTrim", "#e2d2b8", 0.04, 0.68);
@@ -675,6 +682,8 @@ function createCoin(name) {
   coin.rotation.z = (Math.random() - 0.5) * 0.025;
   const rim = MeshBuilder.CreateTorus(name + "Rim", { diameter: 0.34, thickness: 0.018, tessellation: 48 }, scene);
   rim.parent = coin; rim.position.y = 0.034; rim.material = brass;
+  const lowerRim = MeshBuilder.CreateTorus(name + "LowerRim", { diameter: 0.35, thickness: 0.012, tessellation: 48 }, scene);
+  lowerRim.parent = coin; lowerRim.position.y = -0.034; lowerRim.material = brass;
   const medallion = MeshBuilder.CreateCylinder(name + "Medallion", { diameter: 0.24, height: 0.008, tessellation: 48 }, scene);
   medallion.parent = coin; medallion.position.y = 0.034; medallion.material = coinFaceMat;
   for (let ray = 0; ray < 6; ray++) {
