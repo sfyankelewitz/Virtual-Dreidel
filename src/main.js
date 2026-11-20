@@ -717,6 +717,21 @@ celebrationRing.position.y = 0.22; celebrationRing.material = celebrationMateria
 celebrationRing.isVisible = false;
 let celebrationElapsed = 0;
 
+// Tiny glowing game-world sparkles give the scene a playful, animated finish.
+const sparkleMat = new StandardMaterial("storybookSparkleMaterial", scene);
+sparkleMat.diffuseColor = new Color3(1, 0.86, 0.48);
+sparkleMat.emissiveColor = new Color3(1, 0.62, 0.18);
+sparkleMat.disableLighting = true;
+const storybookSparkles = [];
+for (let i = 0; i < 12; i++) {
+  const sparkle = MeshBuilder.CreateSphere("storybookSparkle", { diameter: 0.13 + (i % 3) * 0.035, segments: 8 }, scene);
+  sparkle.material = sparkleMat;
+  sparkle.position.set(Math.cos(i * Math.PI / 6) * (5.6 + (i % 2) * 0.45), 2.0 + (i % 4) * 0.62, Math.sin(i * Math.PI / 6) * (5.6 + (i % 2) * 0.45));
+  sparkle.isPickable = false;
+  storybookSparkles.push({ mesh: sparkle, phase: i * 0.73, baseY: sparkle.position.y });
+}
+
+
 // Four understated seat markers help establish the multiplayer table layout.
 const seatPositions = [
   new Vector3(0, 0.15, -4.55), new Vector3(4.55, 0.15, 0),
@@ -1261,6 +1276,7 @@ scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
   roomFlickerTime += dt;
+  storybookSparkles.forEach(({ mesh, phase, baseY }) => { mesh.position.y = baseY + Math.sin(roomFlickerTime * 1.8 + phase) * 0.16; mesh.rotation.y += dt * (0.8 + phase * 0.08); mesh.scaling.setAll(0.82 + (Math.sin(roomFlickerTime * 2.5 + phase) + 1) * 0.16); });
   if (winnerCrown) { winnerCrown.rotation.y += dt * 0.5; winnerCrown.position.y = 2.65 + Math.sin(roomFlickerTime * 2.2) * 0.08; }
   menorahFlames.forEach((flame, i) => {
     const flicker = 1 + Math.sin(roomFlickerTime * (8 + i * 0.7) + i) * 0.1;
