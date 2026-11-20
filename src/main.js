@@ -736,7 +736,7 @@ function setDreidelFinish(finish) {
     button.classList.toggle("locked", !owned);
     button.querySelector(".finish-name").textContent = owned ? button.dataset.name : button.dataset.name + " · " + button.dataset.cost;
   });
-  document.querySelectorAll(".finish-option").forEach(button => {
+  document.querySelectorAll(".dreidel-finish-option").forEach(button => {
     button.classList.toggle("active", button.dataset.finish === finish);
   });
 }
@@ -924,7 +924,7 @@ function refreshUI() {
       i === turn ? (turn === 0 ? "Playing now" : "Taking a turn") :
       ["Your seat", "Careful player", "Bold player", "Wildcard"][i];
   });
-  document.querySelectorAll(".finish-option").forEach(button => {
+  document.querySelectorAll(".dreidel-finish-option").forEach(button => {
     const owned = ownedFinishes.has(button.dataset.finish);
     button.classList.toggle("active", button.dataset.finish === selectedFinish);
     button.classList.toggle("locked", !owned);
@@ -1172,7 +1172,7 @@ document.querySelectorAll(".table-finish-option").forEach(button => button.addEv
   }
   setTableFinish(finish);
 }));
-document.querySelectorAll(".finish-option").forEach(button => button.addEventListener("click", () => {
+document.querySelectorAll(".dreidel-finish-option").forEach(button => button.addEventListener("click", () => {
   const finish = button.dataset.finish;
   if (!ownedFinishes.has(finish)) {
     const cost = Number(button.dataset.cost);
