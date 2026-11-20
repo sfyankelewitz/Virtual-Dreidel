@@ -814,6 +814,8 @@ const $ = id => document.getElementById(id);
 function refreshUI() {
   $("potValue").textContent = pot;
   $("balanceValue").textContent = balances[0];
+  if (bet > balances[0]) bet = balances[0] || 1;
+  $("betSummary").textContent = "Wager " + bet + " of your " + balances[0] + " coins";
   $("activePlayer").textContent = names[turn];
   turnSpot.position.set(seatPositions[turn].x * 0.72, 4.2, seatPositions[turn].z * 0.72);
   document.querySelector(".turn-avatar").textContent = names[turn].charAt(0);
@@ -837,7 +839,7 @@ function refreshUI() {
     button.classList.toggle("active", button.dataset.finish === selectedFinish);
   });
   document.querySelectorAll(".bet-option").forEach(button => {
-    const amount = Number(button.dataset.bet);
+    const amount = button.dataset.bet === "all" ? balances[0] : Number(button.dataset.bet);
     button.classList.toggle("active", amount === bet);
     button.disabled = gameBusy || turn !== 0 || gameOver || amount > balances[0];
   });
@@ -1025,7 +1027,7 @@ document.querySelectorAll(".finish-option").forEach(button => button.addEventLis
   setDreidelFinish(button.dataset.finish);
 }));
 document.querySelectorAll(".bet-option").forEach(button => button.addEventListener("click", () => {
-  bet = Number(button.dataset.bet);
+  bet = button.dataset.bet === "all" ? balances[0] : Number(button.dataset.bet);
   refreshUI();
 }));
 $("spinButton").addEventListener("click", spinDreidel);
