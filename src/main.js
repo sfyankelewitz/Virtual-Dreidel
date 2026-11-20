@@ -1,5 +1,6 @@
 import "./style.css";
 import "@babylonjs/loaders/glTF";
+import { DefaultRenderingPipeline } from "@babylonjs/core/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline";
 import {
   Engine, Scene, ArcRotateCamera, Vector3, Color3, Color4,
   HemisphericLight, DirectionalLight, PointLight, MeshBuilder, PBRMaterial,
@@ -65,6 +66,22 @@ shadows.normalBias = 0.025;
 scene.imageProcessingConfiguration.toneMappingEnabled = true;
 scene.imageProcessingConfiguration.exposure = 1.08;
 scene.imageProcessingConfiguration.contrast = 1.22;
+
+// Cinematic presentation pass: cleaner edges, controlled highlight bloom and
+// HDR tone mapping. Keep the effect restrained so brass and flames glow softly
+// without making the whole room look synthetic or overexposed.
+const renderPipeline = new DefaultRenderingPipeline(
+  "familyRoomCinematicPipeline", true, scene, [camera]
+);
+renderPipeline.samples = 4;
+renderPipeline.fxaaEnabled = true;
+renderPipeline.imageProcessingEnabled = true;
+renderPipeline.bloomEnabled = true;
+renderPipeline.bloomThreshold = 0.92;
+renderPipeline.bloomWeight = 0.12;
+renderPipeline.bloomKernel = 48;
+renderPipeline.bloomScale = 0.5;
+
 const glow = new GlowLayer("subtleGlow", scene);
 glow.intensity = 0.08;
 scene.ambientColor = new Color3(0.16, 0.14, 0.12);
