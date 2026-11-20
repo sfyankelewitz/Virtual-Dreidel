@@ -245,6 +245,17 @@ function makeArmchair(x, z, angle) {
 makeArmchair(0, -9.0, 0);
 makeArmchair(-8.0, 0, Math.PI / 2);
 makeArmchair(8.0, 0, -Math.PI / 2);
+const rugTexture = new DynamicTexture("wovenRugTexture", { width: 512, height: 512 }, scene, false);
+const rugCtx = rugTexture.getContext();
+rugCtx.fillStyle = "#6d5142"; rugCtx.fillRect(0, 0, 512, 512);
+for (let i = 0; i < 512; i += 7) {
+  rugCtx.strokeStyle = i % 14 === 0 ? "rgba(225,190,145,.16)" : "rgba(25,17,14,.13)";
+  rugCtx.lineWidth = 2;
+  rugCtx.beginPath(); rugCtx.moveTo(0, i); rugCtx.lineTo(512, i); rugCtx.stroke();
+  rugCtx.beginPath(); rugCtx.moveTo(i, 0); rugCtx.lineTo(i, 512); rugCtx.stroke();
+}
+rugTexture.update();
+rugMat.albedoTexture = rugTexture;
 const rug = MeshBuilder.CreateBox("livingRoomRug", { width: 17, height: 0.08, depth: 13 }, scene);
 rug.position.set(0, -1.64, -0.1); rug.material = rugMat;
 const rugBorderMat = pbr("rugBorder", "#a88a63", 0.02, 0.9);
@@ -286,6 +297,14 @@ tableTop.material = tableMat;
 tableTop.receiveShadows = true;
 const outerEdgeTrim = MeshBuilder.CreateTorus("tableOuterBrassEdge", { diameter: 12.82, thickness: 0.045, tessellation: 128 }, scene);
 outerEdgeTrim.position.y = -0.005; outerEdgeTrim.material = brass;
+const tableRivetRadius = 6.02;
+for (let i = 0; i < 48; i++) {
+  const angle = (i / 48) * Math.PI * 2;
+  const rivet = MeshBuilder.CreateSphere("tableBrassRivet", { diameter: 0.105, segments: 12 }, scene);
+  rivet.position.set(Math.cos(angle) * tableRivetRadius, 0.145, Math.sin(angle) * tableRivetRadius);
+  rivet.material = brass;
+}
+
 shadows.addShadowCaster(tableBase);
 shadows.addShadowCaster(tableTop);
 
@@ -296,6 +315,11 @@ const pedestalFoot = MeshBuilder.CreateCylinder("pedestalFoot", { diameter: 3.35
 pedestalFoot.position.y = -1.58; pedestalFoot.material = darkWood;
 const pedestalFootTrim = MeshBuilder.CreateTorus("pedestalFootBrass", { diameter: 3.22, thickness: 0.035, tessellation: 96 }, scene);
 pedestalFootTrim.position.y = -1.47; pedestalFootTrim.material = brass;
+for (const y of [-1.18, -0.94, -0.7]) {
+  const carvedBand = MeshBuilder.CreateTorus("pedestalCarvedBand", { diameter: 1.78, thickness: 0.025, tessellation: 64 }, scene);
+  carvedBand.position.y = y; carvedBand.material = brass;
+}
+
 const pedestalNeck = MeshBuilder.CreateCylinder("pedestalNeck", { diameterTop: 2.05, diameterBottom: 1.7, height: 0.18, tessellation: 64 }, scene);
 pedestalNeck.position.y = -0.48; pedestalNeck.material = brass;
 shadows.addShadowCaster(pedestal);
