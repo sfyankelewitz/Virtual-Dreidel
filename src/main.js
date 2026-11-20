@@ -1319,6 +1319,14 @@ scene.onBeforeRenderObservable.add(() => {
   const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
   camera.radius += (desiredCameraRadius - camera.radius) * Math.min(dt * 2.2, 1);
   roomFlickerTime += dt;
+  newFireFlames.forEach(({ outer, inner, phase, y }) => {
+    const pulse = 0.9 + Math.sin(roomFlickerTime * 9 + phase) * 0.14;
+    outer.scaling.y = 1.35 * pulse;
+    outer.position.y = y + Math.sin(roomFlickerTime * 7 + phase) * 0.09;
+    inner.scaling.y = 1.2 * (0.9 + Math.sin(roomFlickerTime * 10 + phase) * 0.12);
+  });
+  newFireLight.intensity = 1.08 + Math.sin(roomFlickerTime * 8.2) * 0.18;
+  lampOrb.scaling.setAll(1 + Math.sin(roomFlickerTime * 2.1) * 0.018);
   fireplaceFlames.forEach(({ mesh, phase, baseY }) => {
     const flicker = 0.86 + Math.sin(roomFlickerTime * 9 + phase) * 0.2;
     mesh.scaling.y = (1.35 + (phase % 0.3)) * flicker;
@@ -1541,6 +1549,223 @@ scene.meshes.forEach(mesh => {
   }
 });
 
+// FULL ART OVERHAUL — rounded, colorful storybook game world.
+// Keep the gameplay table, dreidel, coins and player tokens; replace the old
+// noisy room/furniture set with a clean, deliberately composed toy-like world.
+const oldRoomPattern = /^(livingRoomFloor|livingRoomBackWall|livingRoomLeftWall|livingRoomRightWall|bookcaseBack|bookcaseSide|bookcaseShelf|libraryBook|livingRoomWindowFrame|livingRoomWindowPane|windowMullion|windowCrossbar|windowCurtain|curtainPleat|wallBaseboard|backWallBaseboard|backWallMoulding|walnutConsoleTop|consoleLeg|menorahBase|menorahCenterStem|menorahBranch|menorahCandleCup|menorahCandle|menorahFlame|wallArtFrame|wallArtCanvas|artSun|sofaBase|sofaBack|sofaBackSeam|sofaArm|sofaCushion|sofaCushionPiping|sofaAccentPillow|armchairSeat|armchairSeatCushion|armchairBack|armchairArm|armchairLeg|armchairSeatPad|livingRoomRug|rugBorder|sideTableTop|sideTableLeg|lampBase|lampStem|lampShade|storybookFireplace.*|fireplace.*|storybookFireFlame)$/i;
+scene.meshes.forEach(mesh => {
+  if (oldRoomPattern.test(mesh.name)) mesh.setEnabled(false);
+});
+scene.transformNodes.filter(node => /PolyHaven|livingRoomArmchair|storybookFireplace/i.test(node.name)).forEach(node => node.setEnabled(false));
+
+// Smooth, saturated materials: no photographic grain or noisy bump maps.
+function toyMat(name, hex, roughness = 0.78, emissive = false) {
+  const mat = new StandardMaterial(name, scene);
+  mat.diffuseColor = Color3.FromHexString(hex);
+  mat.specularColor = new Color3(0.18, 0.16, 0.2);
+  mat.specularPower = 64 * (1 - roughness) + 12;
+  if (emissive) mat.emissiveColor = Color3.FromHexString(hex);
+  return mat;
+}
+const toyWallMat = toyMat("storybookWall", "#8fb7e8");
+const toyFloorMat = toyMat("storybookFloor", "#d8a879");
+const toyTrimMat = toyMat("storybookCreamTrim", "#fff0d2");
+const toyStoneMat = toyMat("storybookPeachStone", "#f4c18c");
+const toyFireplaceDark = toyMat("storybookHearthDark", "#3b3657");
+const toyWoodMat = toyMat("storybookHoneyWood", "#b96d45");
+const toySofaMat = toyMat("storybookSofaCoral", "#e77d69");
+const toyCushionMat = toyMat("storybookCushion", "#ffd27a");
+const toyChairMat = toyMat("storybookChairTeal", "#4fabb0");
+const toyChairLightMat = toyMat("storybookChairCushion", "#b8e5d9");
+const toyRugMat = toyMat("storybookRug", "#668fc5");
+const toyGoldMat = toyMat("storybookGold", "#ffd36a", 0.35);
+const toyPlantMat = toyMat("storybookPlant", "#5caa79");
+const toyPotMat = toyMat("storybookPot", "#f0a46e");
+const toyFlameMat = toyMat("storybookFlame", "#ff9d38", 0.35, true);
+const toyFlameCoreMat = toyMat("storybookFlameCore", "#ffe47b", 0.25, true);
+
+const stageFloor = MeshBuilder.CreateGround("storybookStageFloor", { width: 34, height: 30 }, scene);
+stageFloor.position.set(0, -1.76, 0);
+stageFloor.material = toyFloorMat;
+stageFloor.receiveShadows = true;
+const stageBackWall = MeshBuilder.CreateBox("storybookStageBackWall", { width: 30, height: 12, depth: 0.3 }, scene);
+stageBackWall.position.set(0, 4.15, 11.7);
+stageBackWall.material = toyWallMat;
+stageBackWall.isPickable = false;
+const stageLeftWall = MeshBuilder.CreateBox("storybookStageLeftWall", { width: 0.3, height: 12, depth: 24 }, scene);
+stageLeftWall.position.set(-14.85, 4.15, 0);
+stageLeftWall.material = toyWallMat;
+stageLeftWall.isPickable = false;
+const stageBaseboard = MeshBuilder.CreateBox("storybookStageBaseboard", { width: 29.8, height: 0.32, depth: 0.22 }, scene);
+stageBaseboard.position.set(0, -1.55, 11.48);
+stageBaseboard.material = toyTrimMat;
+
+// A big, soft-edged oval rug anchors the table in the room.
+const toyRug = MeshBuilder.CreateCylinder("storybookOvalRug", { diameter: 19, height: 0.12, tessellation: 96 }, scene);
+toyRug.scaling.z = 0.78;
+toyRug.position.set(0, -1.67, 0);
+toyRug.material = toyRugMat;
+toyRug.receiveShadows = true;
+const toyRugRing = MeshBuilder.CreateTorus("storybookRugPiping", { diameter: 18.7, thickness: 0.09, tessellation: 96 }, scene);
+toyRugRing.scaling.z = 0.78;
+toyRugRing.position.set(0, -1.59, 0);
+toyRugRing.material = toyGoldMat;
+
+// Fireplace nook on the back-left, made from chunky rounded toy-like forms.
+const newFireRoot = new TransformNode("storybookFireplaceNook", scene);
+newFireRoot.position.set(-8.4, 0, 10.95);
+function firePart(name, dims, pos, material, rounded = false) {
+  const mesh = rounded
+    ? MeshBuilder.CreateCapsule(name, { height: dims[1], radius: dims[0] / 2, tessellation: 16, subdivisions: 4 }, scene)
+    : MeshBuilder.CreateBox(name, { width: dims[0], height: dims[1], depth: dims[2] }, scene);
+  mesh.parent = newFireRoot;
+  mesh.position.set(pos[0], pos[1], pos[2]);
+  mesh.material = material;
+  mesh.isPickable = false;
+  return mesh;
+}
+firePart("storybookFireplaceBody", [5.3, 4.7, 0.7], [0, 0.7, 0], toyStoneMat);
+firePart("storybookFireplaceOpening", [3.25, 2.55, 0.15], [0, 0.2, -0.39], toyFireplaceDark);
+firePart("storybookFireplaceHearth", [4.6, 0.35, 1.0], [0, -1.55, -0.05], toyWoodMat);
+firePart("storybookFireplaceMantel", [5.8, 0.42, 0.95], [0, 3.12, 0], toyWoodMat);
+for (const x of [-2.05, 2.05]) {
+  const column = MeshBuilder.CreateCapsule("storybookFireplaceColumn", { height: 4.0, radius: 0.3, tessellation: 20, subdivisions: 5 }, scene);
+  column.parent = newFireRoot;
+  column.position.set(x, 0.65, -0.45);
+  column.material = toyTrimMat;
+}
+const newFireFlames = [];
+for (let i = 0; i < 6; i++) {
+  const outer = MeshBuilder.CreateSphere("storybookFireOuter", { diameter: 0.75, segments: 16 }, scene);
+  outer.parent = newFireRoot;
+  outer.position.set(-1.0 + i * 0.4, -0.78 + (i % 2) * 0.12, -0.57);
+  outer.scaling.set(0.58, 1.35 + (i % 3) * 0.15, 0.42);
+  outer.material = toyFlameMat;
+  const inner = MeshBuilder.CreateSphere("storybookFireCore", { diameter: 0.4, segments: 12 }, scene);
+  inner.parent = newFireRoot;
+  inner.position.set(outer.position.x, -0.88, -0.64);
+  inner.scaling.set(0.52, 1.2, 0.5);
+  inner.material = toyFlameCoreMat;
+  newFireFlames.push({ outer, inner, phase: i * 0.91, y: outer.position.y });
+}
+const newFireLight = new PointLight("storybookFireGlow", new Vector3(-8.4, 0.7, 9.6), scene);
+newFireLight.diffuse = new Color3(1, 0.39, 0.12);
+newFireLight.intensity = 1.2;
+newFireLight.range = 12;
+
+// Rounded sofa: capsule cushions, pill-shaped arms, soft accent pillows.
+const newSofaRoot = new TransformNode("storybookSofa", scene);
+newSofaRoot.position.set(1.8, 0, 9.2);
+function sofaCapsule(name, width, height, depth, pos, material) {
+  const mesh = MeshBuilder.CreateSphere(name, { diameter: 1, segments: 24 }, scene);
+  mesh.parent = newSofaRoot;
+  mesh.scaling.set(width, height, depth);
+  mesh.position.set(pos[0], pos[1], pos[2]);
+  mesh.material = material;
+  return mesh;
+}
+sofaCapsule("storybookSofaBase", 3.9, 0.48, 0.95, [0, -1.16, 0], toySofaMat);
+sofaCapsule("storybookSofaBack", 3.9, 0.82, 0.42, [0, -0.56, -0.52], toySofaMat);
+for (const x of [-1.78, 1.78]) sofaCapsule("storybookSofaArm", 0.55, 0.7, 0.92, [x, -0.83, 0.03], toySofaMat);
+for (const x of [-1.22, 0, 1.22]) {
+  sofaCapsule("storybookSofaSeatCushion", 0.92, 0.2, 0.72, [x, -0.76, 0.12], toyCushionMat);
+  const pillow = MeshBuilder.CreateSphere("storybookSofaThrowPillow", { diameter: 0.72, segments: 20 }, scene);
+  pillow.parent = newSofaRoot;
+  pillow.position.set(x * 1.25, -0.28, -0.54);
+  pillow.scaling.set(0.72, 0.62, 0.28);
+  pillow.material = x < 0 ? toyChairLightMat : toyGoldMat;
+}
+
+// Two friendly rounded armchairs angled toward the shared table.
+function makeToyChair(x, z, angle, material, cushionMaterial) {
+  const root = new TransformNode("storybookArmchair", scene);
+  root.position.set(x, 0, z);
+  root.rotation.y = angle;
+  const part = (name, size, pos, mat) => {
+    const mesh = MeshBuilder.CreateSphere(name, { diameter: 1, segments: 20 }, scene);
+    mesh.parent = root;
+    mesh.scaling.set(size[0], size[1], size[2]);
+    mesh.position.set(pos[0], pos[1], pos[2]);
+    mesh.material = mat;
+    return mesh;
+  };
+  part("storybookChairSeat", [1.3, 0.38, 1.12], [0, -1.08, 0], material);
+  part("storybookChairBack", [1.35, 1.15, 0.38], [0, -0.42, -0.62], material);
+  for (const side of [-1, 1]) part("storybookChairArm", [0.34, 0.62, 0.98], [side * 1.05, -0.77, 0.05], material);
+  part("storybookChairSeatPad", [1.05, 0.16, 0.82], [0, -0.84, 0.08], cushionMaterial);
+  for (const side of [-1, 1]) {
+    const foot = MeshBuilder.CreateCylinder("storybookChairFoot", { diameter: 0.17, height: 0.5, tessellation: 16 }, scene);
+    foot.parent = root;
+    foot.position.set(side * 0.82, -1.42, 0.65);
+    foot.material = toyWoodMat;
+  }
+  return root;
+}
+makeToyChair(-9.1, 0.4, Math.PI / 2, toyChairMat, toyChairLightMat);
+makeToyChair(9.1, 0.4, -Math.PI / 2, toySofaMat, toyCushionMat);
+
+// A cheerful side table, glowing globe lamp and a little potted plant.
+const sideTable = MeshBuilder.CreateCylinder("storybookSideTable", { diameter: 2.0, height: 0.2, tessellation: 48 }, scene);
+sideTable.position.set(8.4, -0.72, 7.0);
+sideTable.material = toyWoodMat;
+for (const a of [0, 2.1, 4.2]) {
+  const leg = MeshBuilder.CreateCylinder("storybookSideTableLeg", { diameter: 0.12, height: 1.6, tessellation: 16 }, scene);
+  leg.position.set(8.4 + Math.cos(a) * 0.68, -1.43, 7.0 + Math.sin(a) * 0.68);
+  leg.material = toyWoodMat;
+}
+const lampOrb = MeshBuilder.CreateSphere("storybookLampGlobe", { diameter: 1.05, segments: 24 }, scene);
+lampOrb.position.set(8.4, 0.1, 7.0);
+lampOrb.material = toyMat("storybookLampGlow", "#ffe6a4", 0.25, true);
+const lampLight = new PointLight("storybookLampLight", new Vector3(8.4, 0.2, 7), scene);
+lampLight.diffuse = new Color3(1, 0.76, 0.42);
+lampLight.intensity = 0.65;
+lampLight.range = 8;
+
+// Refinish the play surface and hero dreidel: smooth candy colors, less noise,
+// and a smaller silhouette so the Hebrew letters read clearly.
+tableMat.albedoTexture = null;
+tableMat.bumpTexture = null;
+tableMat.albedoColor = Color3.FromHexString("#c98250");
+tableMat.roughness = 0.52;
+darkWood.albedoTexture = null;
+darkWood.bumpTexture = null;
+darkWood.albedoColor = Color3.FromHexString("#754936");
+brass.albedoColor = Color3.FromHexString("#ffd36a");
+brass.metallic = 0.5;
+felt.albedoTexture = null;
+felt.bumpTexture = null;
+felt.albedoColor = Color3.FromHexString("#238c82");
+rugMat.albedoTexture = null;
+rugMat.bumpTexture = null;
+roomWall.albedoTexture = null;
+roomWall.bumpTexture = null;
+roomWall.albedoColor = Color3.FromHexString("#8fb7e8");
+upholstery.albedoTexture = null;
+upholstery.bumpTexture = null;
+upholstery.albedoColor = Color3.FromHexString("#e77d69");
+upholsteryLight.albedoTexture = null;
+upholsteryLight.bumpTexture = null;
+upholsteryLight.albedoColor = Color3.FromHexString("#ffd27a");
+curtainMat.albedoTexture = null;
+curtainMat.bumpTexture = null;
+bodyMat.albedoTexture = null;
+bodyMat.bumpTexture = null;
+bodyMat.albedoColor = Color3.FromHexString("#e76e54");
+bodyMat.metallic = 0.05;
+bodyMat.roughness = 0.38;
+bodyMat.clearCoat.intensity = 0.42;
+dreidelRoot.scaling.setAll(1.58);
+hemi.intensity = 1.05;
+key.intensity = 1.0;
+tableFill.intensity = 0.62;
+fill.intensity = 0.42;
+shadows.setDarkness(0.14);
+glow.intensity = 0.34;
+renderPipeline.bloomThreshold = 0.8;
+renderPipeline.bloomWeight = 0.16;
+
+// Animate the fireplace, gentle room glows and storybook furniture.
+
 // Real, textured CC0 furniture models from Poly Haven. The procedural furniture
 // remains as a graceful fallback if a model CDN is unavailable.
 async function importPolyHavenModel(assetFolder, fileName, name, position, scale, rotationY = 0, hidePattern = null) {
@@ -1601,7 +1826,7 @@ async function loadPremiumRoomFurniture() {
     console.warn("Virtual Dreidel: armchair models unavailable; keeping the built-in chairs.", error);
   }
 }
-loadPremiumRoomFurniture();
+// Stylized room furniture is built locally above; no external furniture downloads.
 refreshUI();
 if (!gameOver && turn !== 0) scheduleAiTurn();
 
