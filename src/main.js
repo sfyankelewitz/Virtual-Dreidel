@@ -282,7 +282,6 @@ const potCoinSpots = [
 function createCoin(name) {
   const coin = MeshBuilder.CreateCylinder(name, { diameter: 0.46, height: 0.065, tessellation: 48 }, scene);
   coin.material = coinMat;
-  coin.rotation.x = Math.PI / 2;
   coin.rotation.z = (Math.random() - 0.5) * 0.08;
   shadows.addShadowCaster(coin);
   return coin;
@@ -315,6 +314,28 @@ seatPositions.forEach((pos, i) => {
   inner.position.set(pos.x, 0.19, pos.z);
   inner.material = brass;
 });
+
+// Each player's reserve is visible as a little stack of coins at their seat.
+// One rendered coin represents ten game coins, keeping the table readable.
+const playerCoinMeshes = [[], [], [], []];
+const playerCoinSpots = [[0, -3.55], [3.55, 0], [0, 3.55], [-3.55, 0]];
+function updatePlayerCoinStacks() {
+  balances.forEach((balance, playerIndex) => {
+    const visibleCount = Math.min(12, Math.ceil(balance / 10));
+    const pile = playerCoinMeshes[playerIndex];
+    while (pile.length < visibleCount) {
+      const coin = MeshBuilder.CreateCylinder("playerReserveCoin", { diameter: 0.25, height: 0.045, tessellation: 40 }, scene);
+      coin.material = coinMat;
+      shadows.addShadowCaster(coin);
+      pile.push(coin);
+    }
+    while (pile.length > visibleCount) pile.pop().dispose();
+    pile.forEach((coin, i) => {
+      coin.position.set(playerCoinSpots[playerIndex][0], 0.205 + i * 0.048, playerCoinSpots[playerIndex][1]);
+      coin.rotation.y = playerIndex * 0.35 + i * 0.08;
+    });
+  });
+}
 
 // Procedural lettering texture: each Hebrew character is painted into its own face texture.
 function letterMaterial(letter, name) {
@@ -421,6 +442,7 @@ function refreshUI() {
   $("potValue").textContent = pot;
   $("balanceValue").textContent = balances[0];
   $("activePlayer").textContent = names[turn];
+  document.querySelector(".turn-avatar").textContent = names[turn].charAt(0);
   $("roundValue").textContent = String(round).padStart(2, "0");
   $("turnPill").textContent = gameOver ? "GAME OVER" : turn === 0 ? "YOUR TURN" : "OPPONENT TURN";
   $("turnNote").textContent = gameOver ? "You're out of coins. Start a new game to play again." :
@@ -442,6 +464,7 @@ function refreshUI() {
     button.disabled = gameBusy || turn !== 0 || gameOver || amount > balances[0];
   });
   updatePotCoins();
+  updatePlayerCoinStacks();
 }
 
 function addActivity(message) {
