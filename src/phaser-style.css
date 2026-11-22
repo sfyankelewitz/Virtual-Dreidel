@@ -15,3 +15,22 @@
 .spin-button{font-size:12px;text-shadow:0 1px 0 #fff4b4}
 .spin-button:hover{filter:saturate(1.15) brightness(1.03)}
 .rules-row article>b{background:linear-gradient(145deg,#ffe45d,#ff9d4a);box-shadow:0 3px 0 #d98536}
+
+/* Level redesign: brighter, chunkier casual-game presentation */
+.game-frame{border:4px solid #fff;box-shadow:0 20px 0 #a9d8e8,0 28px 50px #2776a43a}
+.game-frame-top{background:linear-gradient(90deg,#fff0b8,#fff9e6)}
+.game-caption{background:linear-gradient(90deg,#fff0b8,#fff9e6);height:52px}
+.controls-card{border:3px solid #fff;box-shadow:0 9px 0 #b5dbe9,0 20px 35px #2879a32a}
+.card-heading h2{color:#304a79;text-shadow:0 2px 0 #fff}
+.bet-grid button{border:2px solid #d9e9f4;box-shadow:0 3px 0 #c8dce9;font-family:Fredoka,sans-serif;font-size:15px}
+.bet-grid button.selected{background:linear-gradient(145deg,#ffe86a,#ffb74f);border-color:#fff0a5;box-shadow:0 4px 0 #d98936}
+.spin-button{height:60px;border:3px solid #fff0a5;background:linear-gradient(110deg,#ffe64e,#ff9d45);box-shadow:0 7px 0 #d47c32,0 13px 22px #d59b4b40;font-family:Fredoka,sans-serif;font-size:15px;letter-spacing:1px}
+.spin-button span{font-size:26px}
+.players{border-top:2px dashed #dbe5f2}
+.player-line{height:53px}
+.player-line.active{background:linear-gradient(90deg,#fff0a8,#ffe4b6);box-shadow:inset 0 0 0 2px #ffd35b}
+.avatar{box-shadow:0 3px 0 #c5d4e7;border:2px solid #fff}
+.new-game{background:#e5f7ff;border:2px solid #fff;box-shadow:0 3px 0 #c8e5f2;font-family:Fredoka,sans-serif;font-size:13px}
+.rules{border:3px solid #fff;box-shadow:0 8px 0 #b5dbe9}
+.rules-row article{background:#e8f8ff;border:2px solid #fff;box-shadow:0 3px 0 #c9e4ee}
+@media(max-width:760px){.game-frame{box-shadow:0 10px 0 #a9d8e8,0 18px 35px #2776a43a}.controls-card{box-shadow:0 7px 0 #b5dbe9}}
