@@ -87,7 +87,7 @@ class DreidelScene extends Phaser.Scene{
   g.lineStyle(6,0xffe16b,1);g.strokeCircle(480,373,48);
   g.fillStyle(0x46d6d0,1);g.fillCircle(480,373,34);
   g.lineStyle(3,0xffffff,.85);g.strokeCircle(480,373,34);
-  g.fillStyle(0xfff0a4,1);g.fillStar(480,373,6,8,17);
+  g.fillStyle(0xfff0a4,1);this.add.star(480,373,6,8,17,0xfff0a4,1).setDepth(4);
  }
  drawMenorah(){
   const g=this.add.graphics();g.lineStyle(8,0xe8b957,1);g.beginPath();g.moveTo(480,183);g.lineTo(480,130);g.moveTo(448,181);g.lineTo(448,153);g.lineTo(480,153);g.moveTo(512,181);g.lineTo(512,153);g.lineTo(480,153);
@@ -154,10 +154,10 @@ class DreidelScene extends Phaser.Scene{
   for(let i=0;i<22;i++){let x=Phaser.Math.Between(30,930),y=Phaser.Math.Between(30,560);let s=this.add.star(x,y,4,2,5,0xffd779,.7);s.setScale(Phaser.Math.FloatBetween(.35,.85));this.sparkles.push(s);this.tweens.add({targets:s,alpha:0,scale:.12,duration:Phaser.Math.Between(700,1700),yoyo:true,repeat:-1,delay:i*80,ease:"Sine.easeInOut"})}
  }
  spin(letter,done){
-  this.dreidelLetter.setText(letter);this.dreidel.rotation=0;this.dreidel.setScale(1);
+  this.tweens.killTweensOf(this.dreidel);this.dreidelLetter.setText(letter);this.dreidel.rotation=0;this.dreidel.setScale(1);
   this.tweens.add({targets:this.dreidel,rotation:Math.PI*2*Phaser.Math.Between(5,8)+(Math.random()*Math.PI*2),duration:2100,ease:"Cubic.easeOut",onComplete:()=>{
    this.dreidel.rotation=Math.round(this.dreidel.rotation/(Math.PI/2))*(Math.PI/2);
-   this.tweens.add({targets:this.dreidel,scaleX:1.13,scaleY:.88,duration:130,ease:"Back.easeOut",yoyo:true,onComplete:()=>{this.tweens.add({targets:this.dreidel,scaleX:1,scaleY:1,duration:180,ease:"Back.easeOut"});done(letter)}})
+   this.tweens.add({targets:this.dreidel,scaleX:1.13,scaleY:.88,duration:130,ease:"Back.easeOut",yoyo:true,onComplete:()=>{this.tweens.add({targets:this.dreidel,scaleX:1,scaleY:1,duration:180,ease:"Back.easeOut",onComplete:()=>{this.tweens.add({targets:this.dreidel,y:292,rotation:.035,duration:760,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});done(letter)}})}})
   }});
  }
  celebrate(){
