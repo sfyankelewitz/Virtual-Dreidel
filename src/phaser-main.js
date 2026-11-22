@@ -40,7 +40,7 @@ class DreidelScene extends Phaser.Scene{
   g.fillStyle(0x57415c,1);g.fillRoundedRect(58,266,137,111,19);
   g.fillStyle(0x9b6c56,1);g.fillRoundedRect(45,374,162,18,9);
   g.fillStyle(0x65465b,1);g.fillRoundedRect(51,257,151,15,7);
-  for(let i=0;i<5;i++){let x=76+i*24;g.fillStyle(i%2?0xff9c3d:0xffc35a,1);g.fillEllipse(x,348-(i%3)*12,17,47+(i%3)*12);g.fillStyle(0xffed9a,1;g.fillEllipse(x,354-(i%3)*12,7,28)}
+  for(let i=0;i<5;i++){let x=76+i*24;g.fillStyle(i%2?0xff9c3d:0xffc35a,1);g.fillEllipse(x,348-(i%3)*12,17,47+(i%3)*12);g.fillStyle(0xffed9a,1);g.fillEllipse(x,354-(i%3)*12,7,28)}
   // floorboards in perspective
   g.lineStyle(3,0xb27f61,.32);for(let y=385;y<600;y+=38)g.strokeLineShape(new Phaser.Geom.Line(0,y,W,y));
   for(let x=-200;x<W+200;x+=160)g.strokeLineShape(new Phaser.Geom.Line(x,350,x-190,600));
