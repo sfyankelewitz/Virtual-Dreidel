@@ -18,7 +18,7 @@ function message(t){ui.status.textContent=t}
 class DreidelScene extends Phaser.Scene{
  constructor(){super("DreidelScene")}
  create(){
-  gameScene=this;this.drawRoom();this.drawTable();this.drawMenorah();this.drawPlayers();this.drawCoins();this.drawDreidel();
+  gameScene=this;this.drawRoom();this.drawRoomDecor();this.drawTable();this.drawMenorah();this.drawPlayers();this.drawCoins();this.drawDreidel();
   this.drawSparkles();this.cameras.main.setBackgroundColor("#55cbe9");
   this.scale.on("resize",()=>{});
   this.fireGlow=this.add.circle(155,350,145,0xffa64d,.12).setBlendMode(Phaser.BlendModes.ADD);
@@ -67,6 +67,26 @@ class DreidelScene extends Phaser.Scene{
   const bulbs=[0xffe05e,0xff668e,0x7c75ff,0x5de0b0,0xff8c52,0x67d8ff,0xffd56b];
   for(let i=0;i<7;i++){let x=330+i*50,y=65+Math.sin(i/6*Math.PI)*40;g.fillStyle(0x155d7d,.25);g.fillCircle(x+3,y+5,12);g.fillStyle(bulbs[i],1);g.fillCircle(x,y,12);g.lineStyle(3,0xffffff,.8);g.strokeCircle(x,y,12)}
  }
+
+ drawRoomDecor(){
+  const g=this.add.graphics();
+  // Colorful shelf and Hanukkah props fill the room behind the game.
+  g.fillStyle(0x1e789b,1);g.fillRoundedRect(735,128,190,145,20);
+  g.lineStyle(7,0xffe7a0,1);g.strokeRoundedRect(735,128,190,145,20);
+  g.fillStyle(0xffd86b,1);g.fillRoundedRect(750,144,160,26,9);g.fillRoundedRect(750,207,160,26,9);
+  const bookColors=[0xff6c65,0x6c77e8,0x56c9a8,0xffb64f,0xe88bb4,0x45b7d9];
+  for(let i=0;i<6;i++){g.fillStyle(bookColors[i],1);g.fillRoundedRect(758+i*24,151,17,51,4);g.fillStyle(0xffffff,.55);g.fillRect(762+i*24,157,3,39);}
+  g.fillStyle(0xfff4ce,1);g.fillRoundedRect(286,150,116,112,18);
+  g.lineStyle(6,0xffc95c,1);g.strokeRoundedRect(286,150,116,112,18);
+  this.add.star(344,192,6,12,28,0xff6b8f,1);
+  const mini=this.add.graphics();mini.fillStyle(0x2b9fc6,1);mini.fillRoundedRect(319,218,50,28,8);mini.fillStyle(0xffcf4f,1);mini.fillRoundedRect(335,208,18,15,7);
+  g.fillStyle(0x9a5b49,1);g.fillRoundedRect(840,303,68,56,13);g.fillStyle(0xffc47a,1);g.fillRoundedRect(834,297,80,16,8);
+  for(let i=0;i<7;i++){let x=874+Math.cos(i*1.2)*38,y=296-Math.sin(i*1.1)*43;g.fillStyle(i%2?0x3bbf8b:0x69d66f,1);g.fillEllipse(x,y,19,38);g.lineStyle(2,0x278e6b,.7);g.lineBetween(874,312,x,y);}
+  g.fillStyle(0x7c55bd,1);g.fillEllipse(480,492,840,142);g.fillStyle(0xff9b77,1);g.fillEllipse(480,487,810,122);g.fillStyle(0x5dcbd0,1);g.fillEllipse(480,485,770,98);g.lineStyle(5,0xffe16b,1);g.strokeEllipse(480,485,770,98);
+  for(let i=0;i<36;i++){const a=i*Math.PI*2/36,x=480+382*Math.cos(a),y=485+47*Math.sin(a);g.fillStyle(0xfff3b0,1);g.fillCircle(x,y,3);}
+  g.lineStyle(6,0x287d9e,1);g.lineBetween(480,0,480,35);g.fillStyle(0xffd56b,1);g.fillCircle(480,50,22);g.lineStyle(4,0xfff1b9,1);g.strokeCircle(480,50,22);
+  for(let i=0;i<5;i++){let x=370+i*55;g.lineStyle(3,0x237c9a,1);g.lineBetween(x,8,x,35);g.fillStyle([0xff6c65,0xffd56b,0x7c75ff,0x5de0b0,0xff8c52][i],1);g.fillCircle(x,47,15);g.lineStyle(3,0xffffff,.7);g.strokeCircle(x,47,15);}
+ }
  drawTable(){
   const g=this.add.graphics();
   // Big toy-like tabletop: saturated teal felt, thick honey-gold edge and dark shadow.
@@ -97,18 +117,35 @@ class DreidelScene extends Phaser.Scene{
   for(let i=-3;i<=3;i++){let x=480+i*24,y=125+Math.abs(i)*5;g.fillStyle(0xfff0c9,1);g.fillRoundedRect(x-4,y,8,24,4);let flame=this.add.ellipse(x,y-5,9,15,0xffb34e,1);this.candleFlames.push(flame);this.tweens.add({targets:flame,scaleY:1.35,scaleX:.8,duration:300+Math.abs(i)*37,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:(i+3)*45})}
   this.add.ellipse(480,210,110,25,0x4a5d7b,.12);
  }
+
  drawPlayers(){
   this.playerTokens=[];
-  const positions=[[150,414],[810,414],[260,474],[700,474]];
+  const positions=[[148,414],[812,414],[270,492],[690,492]];
   positions.forEach(([x,y],i)=>{
-   const shadow=this.add.ellipse(x+3,y+11,80,26,0x2d4662,.18);
    const badge=this.add.container(x,y);
-   const plate=this.add.graphics();plate.fillStyle(0xfff7e6,1);plate.fillRoundedRect(-38,-35,76,72,24);plate.lineStyle(3,0xffffff,1);plate.strokeRoundedRect(-38,-35,76,72,24);
-   const avatar=this.add.circle(0,-7,23,Phaser.Display.Color.HexStringToColor(colors[i]).color,1);
-   const letter=this.add.text(0,-8,initials[i],{fontFamily:"Fredoka",fontSize:"22px",fontStyle:"600",color:"#4b5471"}).setOrigin(.5);
-   const name=this.add.text(0,25,names[i],{fontFamily:"DM Sans",fontSize:"12px",fontStyle:"bold",color:"#435374"}).setOrigin(.5);
-   badge.add([plate,avatar,letter,name]);this.playerTokens.push({badge,shadow,x,y});
-   this.tweens.add({targets:badge,y:y-4,duration:1200+i*150,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:i*140});
+   const skin=[0xffd4a5,0xf3bd91,0xd99b72,0xffd7b0][i];
+   const shirt=[0xffc43d,0xff5b91,0x3bc7e8,0x6bd46e][i];
+   const g=this.add.graphics();
+   g.fillStyle(0x26486a,.22);g.fillEllipse(4,102,112,28);
+   g.fillStyle(0x485a8b,1);g.fillRoundedRect(-27,49,20,28,8);g.fillRoundedRect(7,49,20,28,8);
+   g.fillStyle(0xfff4dc,1);g.fillRoundedRect(-33,70,31,15,7);g.fillRoundedRect(3,70,31,15,7);
+   g.fillStyle(shirt,1);g.fillRoundedRect(-52,5,24,53,12);g.fillRoundedRect(28,5,24,53,12);
+   g.fillStyle(skin,1);g.fillCircle(-40,59,11);g.fillCircle(40,59,11);
+   g.fillStyle(0xffffff,1);g.fillRoundedRect(-43,-3,86,65,23);g.lineStyle(5,0x344d78,1);g.strokeRoundedRect(-43,-3,86,65,23);
+   g.fillStyle(shirt,1);g.fillRoundedRect(-38,2,76,52,19);g.fillStyle(0xffffff,.75);g.fillRoundedRect(-8,5,16,44,7);
+   g.fillStyle(skin,1);g.fillCircle(0,-31,42);g.lineStyle(5,0x344d78,1);g.strokeCircle(0,-31,42);g.fillCircle(-39,-30,10);g.fillCircle(39,-30,10);
+   g.fillStyle(0x573d4b,1);
+   if(i===0){g.fillRoundedRect(-38,-67,76,19,10);g.fillRoundedRect(-31,-77,62,20,10);}
+   else if(i===1){g.fillCircle(-22,-57,17);g.fillCircle(0,-66,18);g.fillCircle(23,-56,17);g.fillRoundedRect(-37,-59,74,15,7);}
+   else if(i===2){g.fillRoundedRect(-40,-64,80,23,11);}
+   else{g.fillRoundedRect(-40,-65,80,26,12);g.fillRoundedRect(-27,-76,54,16,8);}
+   g.fillStyle(0xffffff,1);g.fillEllipse(-15,-32,17,22);g.fillEllipse(15,-32,17,22);g.fillStyle(0x2e3e63,1);g.fillCircle(-13,-30,7);g.fillCircle(17,-30,7);g.fillStyle(0xffffff,1);g.fillCircle(-15,-33,3);g.fillCircle(15,-33,3);
+   g.fillStyle(0xff8a9b,.55);g.fillCircle(-26,-17,9);g.fillCircle(26,-17,9);g.lineStyle(4,0x75465a,1);g.beginPath();g.arc(0,-16,14,.15,Math.PI-.15,false);g.strokePath();
+   const plate=this.add.graphics();plate.fillStyle(0xfff4d8,1);plate.fillRoundedRect(-43,82,86,28,12);plate.lineStyle(3,0xffffff,1);plate.strokeRoundedRect(-43,82,86,28,12);
+   const label=this.add.text(0,95,names[i],{fontFamily:"Fredoka",fontSize:"17px",fontStyle:"bold",color:"#344568",stroke:"#fff4d7",strokeThickness:5}).setOrigin(.5);
+   badge.add([g,plate,label]);badge.setScale(1.05);this.playerTokens.push({badge,x,y});
+   this.tweens.add({targets:badge,y:y-7,duration:950+i*140,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:i*110});
+   this.tweens.add({targets:g,rotation:i%2?.025:-.025,duration:1200+i*130,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:i*100});
   });
  }
  drawCoins(){
@@ -145,7 +182,7 @@ class DreidelScene extends Phaser.Scene{
   g.fillStyle(0x8c4a85,1);g.fillRoundedRect(-19,-126,38,31,14);g.lineStyle(4,0xdca6ed,1);g.strokeRoundedRect(-19,-126,38,31,14);
   g.fillStyle(0xffe16b,1);g.fillCircle(0,-125,8);
   const letter=this.add.text(0,-8,"ג",{fontFamily:"Arial",fontSize:"58px",color:"#fff0a0",stroke:"#69376f",strokeThickness:3}).setOrigin(.5);
-  this.dreidel.add([g,letter]);this.dreidelLetter=letter;this.dreidel.setDepth(10);
+  this.dreidel.add([g,letter]);this.dreidelLetter=letter;this.dreidel.setDepth(10);this.dreidel.setScale(1.32);
   // idle anticipation: lively little bob and tilt.
   this.tweens.add({targets:this.dreidel,y:292,rotation:.035,duration:760,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});
  }
@@ -154,10 +191,10 @@ class DreidelScene extends Phaser.Scene{
   for(let i=0;i<22;i++){let x=Phaser.Math.Between(30,930),y=Phaser.Math.Between(30,560);let s=this.add.star(x,y,4,2,5,0xffd779,.7);s.setScale(Phaser.Math.FloatBetween(.35,.85));this.sparkles.push(s);this.tweens.add({targets:s,alpha:0,scale:.12,duration:Phaser.Math.Between(700,1700),yoyo:true,repeat:-1,delay:i*80,ease:"Sine.easeInOut"})}
  }
  spin(letter,done){
-  this.tweens.killTweensOf(this.dreidel);this.dreidelLetter.setText(letter);this.dreidel.rotation=0;this.dreidel.setScale(1);
+  this.tweens.killTweensOf(this.dreidel);this.dreidelLetter.setText(letter);this.dreidel.rotation=0;this.dreidel.setScale(1.32);
   this.tweens.add({targets:this.dreidel,rotation:Math.PI*2*Phaser.Math.Between(5,8)+(Math.random()*Math.PI*2),duration:2100,ease:"Cubic.easeOut",onComplete:()=>{
    this.dreidel.rotation=Math.round(this.dreidel.rotation/(Math.PI/2))*(Math.PI/2);
-   this.tweens.add({targets:this.dreidel,scaleX:1.13,scaleY:.88,duration:130,ease:"Back.easeOut",yoyo:true,onComplete:()=>{this.tweens.add({targets:this.dreidel,scaleX:1,scaleY:1,duration:180,ease:"Back.easeOut",onComplete:()=>{this.tweens.add({targets:this.dreidel,y:292,rotation:.035,duration:760,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});done(letter)}})}})
+   this.tweens.add({targets:this.dreidel,scaleX:1.48,scaleY:1.16,duration:130,ease:"Back.easeOut",yoyo:true,onComplete:()=>{this.tweens.add({targets:this.dreidel,scaleX:1.32,scaleY:1.32,duration:180,ease:"Back.easeOut",onComplete:()=>{this.tweens.add({targets:this.dreidel,y:292,rotation:.035,duration:760,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});done(letter)}})}})
   }});
  }
  celebrate(){
