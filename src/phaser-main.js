@@ -4,7 +4,7 @@ import "./phaser-style.css";
 const W=960,H=600;
 const names=["You","Sarah","David","Moishe"];
 const initials=["Y","S","D","M"];
-const colors=["#ffd780","#f4a6bd","#8dc8ef","#9dd7a3"];
+const colors=["#ffbf3f","#ff5b91","#35c9ed","#62d66f"];
 let balances=[100,100,100,100],pot=12,bet=5,turn=0,spinning=false,soundOn=false,gameScene=null;
 const $=id=>document.getElementById(id);
 const ui={balance:$("balance"),pot:$("pot"),turn:$("turnName"),wager:$("wagerLabel"),status:$("statusMessage"),spin:$("spinButton"),betGrid:$("betGrid")};
@@ -19,56 +19,75 @@ class DreidelScene extends Phaser.Scene{
  constructor(){super("DreidelScene")}
  create(){
   gameScene=this;this.drawRoom();this.drawTable();this.drawMenorah();this.drawPlayers();this.drawCoins();this.drawDreidel();
-  this.drawSparkles();this.cameras.main.setBackgroundColor("#b9d5f2");
+  this.drawSparkles();this.cameras.main.setBackgroundColor("#55cbe9");
   this.scale.on("resize",()=>{});
   this.fireGlow=this.add.circle(155,350,145,0xffa64d,.12).setBlendMode(Phaser.BlendModes.ADD);
   this.tweens.add({targets:this.fireGlow,alpha:.22,scale:1.12,duration:680,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});
  }
  drawRoom(){
   const g=this.add.graphics();
-  g.fillGradientStyle(0x9abbe7,0x9abbe7,0xd3e5f5,0xd3e5f5,1);g.fillRect(0,0,W,350);
-  g.fillStyle(0xf0c99e,1);g.fillRect(0,350,W,250);
-  g.fillStyle(0xffffff,.17);g.fillRect(0,0,W,350);
-  // simple painted wall panels and soft corner shading
-  g.lineStyle(4,0x7899c9,.35);for(let x=55;x<W;x+=170){g.strokeLineShape(new Phaser.Geom.Line(x,0,x,350))}
-  g.fillStyle(0xfff0d2,1);g.fillRoundedRect(35,72,180,152,22);g.fillStyle(0x8bb9df,1);g.fillRoundedRect(48,85,154,126,14);
-  g.fillStyle(0xffd889,1);g.fillCircle(174,111,19);g.fillStyle(0x4f718e,1);
-  g.fillTriangle(52,195,96,145,137,195);g.fillTriangle(100,195,155,133,198,195);
-  // fireplace, cozy left-side feature
-  g.fillStyle(0xe9b87f,1);g.fillRoundedRect(34,228,184,170,22);
-  g.fillStyle(0xffe3b4,1);g.fillRoundedRect(22,220,208,27,12);
-  g.fillStyle(0x57415c,1);g.fillRoundedRect(58,266,137,111,19);
-  g.fillStyle(0x9b6c56,1);g.fillRoundedRect(45,374,162,18,9);
-  g.fillStyle(0x65465b,1);g.fillRoundedRect(51,257,151,15,7);
-  for(let i=0;i<5;i++){let x=76+i*24;g.fillStyle(i%2?0xff9c3d:0xffc35a,1);g.fillEllipse(x,348-(i%3)*12,17,47+(i%3)*12);g.fillStyle(0xffed9a,1);g.fillEllipse(x,354-(i%3)*12,7,28)}
-  // floorboards in perspective
-  g.lineStyle(3,0xb27f61,.32);for(let y=385;y<600;y+=38)g.strokeLineShape(new Phaser.Geom.Line(0,y,W,y));
-  for(let x=-200;x<W+200;x+=160)g.strokeLineShape(new Phaser.Geom.Line(x,350,x-190,600));
-  // warm base trim
-  g.fillStyle(0xffe8c6,1);g.fillRect(0,346,W,12);
-  // wall garland dots
-  g.lineStyle(3,0x658b85,.8);g.beginPath();g.moveTo(330,75);g.lineTo(480,110);g.lineTo(640,75);g.strokePath();
-  for(let i=0;i<9;i++){g.fillStyle([0xffd36a,0xf39db2,0x8bd1b2][i%3],1);g.fillCircle(340+i*36,78+Math.sin(i/8*Math.PI)*31,5)}
+  // A vivid, layered toy-game backdrop: teal sky, candy-colored panels and chunky trim.
+  g.fillGradientStyle(0x36c4e9,0x36c4e9,0x9cecf0,0x9cecf0,1);g.fillRect(0,0,W,360);
+  g.fillStyle(0x25a9cb,1);g.fillRect(0,330,W,30);
+  g.fillStyle(0xffd56b,1);g.fillRect(0,360,W,240);
+  g.fillStyle(0xf8b95c,1);g.fillRect(0,360,W,15);
+  // Graphic wall scallops and large soft shapes.
+  g.fillStyle(0xffffff,.13);g.fillCircle(760,65,170);g.fillCircle(320,45,130);
+  g.fillStyle(0x1e9bbd,.22);g.fillRoundedRect(250,40,460,255,42);
+  g.lineStyle(8,0x168db3,1);g.strokeRoundedRect(250,40,460,255,42);
+  // Bold framed window with cheerful night sky.
+  g.fillStyle(0x236b9e,1);g.fillRoundedRect(40,58,192,164,25);
+  g.fillStyle(0xfff1bd,1);g.fillRoundedRect(50,68,172,144,18);
+  g.fillGradientStyle(0x4e93d2,0x4e93d2,0x91d9ee,0x91d9ee,1);g.fillRoundedRect(58,76,156,128,13);
+  g.fillStyle(0xffe16b,1);g.fillCircle(178,104,18);
+  g.fillStyle(0x286c9b,1);g.fillTriangle(58,195,105,139,151,195);g.fillTriangle(105,195,163,129,214,195);
+  g.lineStyle(7,0xffffff,1);g.strokeRoundedRect(40,58,192,164,25);
+  // Fireplace: strong coral surround, dark plum hearth, animated layered fire.
+  g.fillStyle(0x1b5d7a,.22);g.fillRoundedRect(35,240,198,170,28);
+  g.fillStyle(0xff6c65,1);g.fillRoundedRect(28,225,205,177,28);
+  g.lineStyle(7,0xfff1c8,1);g.strokeRoundedRect(28,225,205,177,28);
+  g.fillStyle(0x9d4569,1);g.fillRoundedRect(53,266,155,119,20);
+  g.fillStyle(0x583b68,1);g.fillRoundedRect(62,278,137,101,14);
+  g.fillStyle(0xffc45d,1);g.fillRoundedRect(40,213,181,27,12);
+  g.lineStyle(4,0xfff1c8,1);g.strokeRoundedRect(40,213,181,27,12);
+  this.fireBits=[];
+  for(let i=0;i<5;i++){
+   const x=82+i*23,y=354-(i%3)*13;
+   const flame=this.add.ellipse(x,y,23,53+(i%3)*10,i%2?0xff6c49:0xffa82e,1);
+   flame.setStrokeStyle(3,0xffe77a,1);this.fireBits.push(flame);
+   this.tweens.add({targets:flame,scaleY:1.25,scaleX:.8,y:y-8,duration:230+i*35,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:i*35});
+   this.add.ellipse(x,y+10,10,27,0xfff5a4,1);
+  }
+  // Graphic rug-like floor with colorful plank stripes.
+  g.fillStyle(0xf28b45,1);g.fillRoundedRect(0,374,W,226,0);
+  g.lineStyle(3,0xffe3a2,.65);for(let y=410;y<600;y+=45)g.strokeLineShape(new Phaser.Geom.Line(0,y,W,y));
+  for(let x=30;x<W;x+=150)g.fillStyle(0xffd56b,.15),g.fillRect(x,380,5,220);
+  // Hanukkah garland and oversized colorful bulbs.
+  g.lineStyle(5,0x157e9c,1);g.beginPath();g.moveTo(300,55);g.lineTo(480,108);g.lineTo(660,55);g.strokePath();
+  const bulbs=[0xffe05e,0xff668e,0x7c75ff,0x5de0b0,0xff8c52,0x67d8ff,0xffd56b];
+  for(let i=0;i<7;i++){let x=330+i*50,y=65+Math.sin(i/6*Math.PI)*40;g.fillStyle(0x155d7d,.25);g.fillCircle(x+3,y+5,12);g.fillStyle(bulbs[i],1);g.fillCircle(x,y,12);g.lineStyle(3,0xffffff,.8);g.strokeCircle(x,y,12)}
  }
  drawTable(){
   const g=this.add.graphics();
-  // soft ground shadow
-  g.fillStyle(0x4a5d7b,.16);g.fillEllipse(492,510,690,105);
-  // thick round game table, tilted into a fixed perspective
-  g.fillStyle(0x986444,1);g.fillEllipse(480,426,730,258);
-  g.fillStyle(0xd6a174,1);g.fillEllipse(480,405,730,258);
-  g.fillStyle(0xf2c38e,1);g.fillEllipse(480,390,730,258);
-  g.fillStyle(0xb97d52,1);g.fillEllipse(480,387,698,236);
-  g.fillStyle(0x7c4b39,1);g.fillEllipse(480,378,676,220);
-  g.fillStyle(0x367d83,1);g.fillEllipse(480,382,450,166);
-  g.fillStyle(0x4ba0a0,1);g.fillEllipse(480,374,432,154);
-  g.lineStyle(6,0xffd57c,.9);g.strokeEllipse(480,374,432,154);
-  g.lineStyle(2,0xffffff,.35);g.strokeEllipse(480,374,656,205);
-  // stylized stitched rim
-  g.lineStyle(2,0xf5d7a7,.6);g.strokeEllipse(480,395,710,246);
-  // central medallion
-  g.fillStyle(0x286a73,1);g.fillCircle(480,373,43);g.lineStyle(3,0xffd77c,.9);g.strokeCircle(480,373,43);
-  g.fillStyle(0xffe3a1,1);g.fillCircle(480,373,5);
+  // Big toy-like tabletop: saturated teal felt, thick honey-gold edge and dark shadow.
+  g.fillStyle(0x173d65,.26);g.fillEllipse(492,514,750,116);
+  g.fillStyle(0x8a3e65,1);g.fillEllipse(480,435,760,270);
+  g.fillStyle(0xffb94f,1);g.fillEllipse(480,412,760,270);
+  g.fillStyle(0xffd875,1);g.fillEllipse(480,397,746,258);
+  g.lineStyle(8,0xfff0b5,1);g.strokeEllipse(480,397,746,258);
+  g.fillStyle(0xf06d61,1);g.fillEllipse(480,386,710,230);
+  g.fillStyle(0xff9b5e,1);g.fillEllipse(480,380,694,218);
+  g.fillStyle(0x168f9f,1);g.fillEllipse(480,382,480,176);
+  g.fillStyle(0x25bdc2,1);g.fillEllipse(480,374,462,164);
+  g.lineStyle(8,0xffe16b,1);g.strokeEllipse(480,374,462,164);
+  g.lineStyle(3,0xffffff,.8);g.strokeEllipse(480,374,438,145);
+  // dotted decorative ring
+  for(let i=0;i<28;i++){const a=i*Math.PI*2/28,x=480+223*Math.cos(a),y=374+78*Math.sin(a);g.fillStyle(0xfff2b0,1);g.fillCircle(x,y,3.5)}
+  g.fillStyle(0x167b92,1);g.fillCircle(480,373,48);
+  g.lineStyle(6,0xffe16b,1);g.strokeCircle(480,373,48);
+  g.fillStyle(0x46d6d0,1);g.fillCircle(480,373,34);
+  g.lineStyle(3,0xffffff,.85);g.strokeCircle(480,373,34);
+  g.fillStyle(0xfff0a4,1);g.fillStar(480,373,6,8,17);
  }
  drawMenorah(){
   const g=this.add.graphics();g.lineStyle(8,0xe8b957,1);g.beginPath();g.moveTo(480,183);g.lineTo(480,130);g.moveTo(448,181);g.lineTo(448,153);g.lineTo(480,153);g.moveTo(512,181);g.lineTo(512,153);g.lineTo(480,153);
@@ -98,33 +117,37 @@ class DreidelScene extends Phaser.Scene{
  }
  makeCoin(x,y,scale=1){
   const coin=this.add.container(x,y).setScale(scale);
-  const shadow=this.add.ellipse(3,7,40,18,0x3b526d,.2);
-  const outer=this.add.ellipse(0,0,38,30,0xd99139,1);
-  const face=this.add.ellipse(-1,-2,31,24,0xffd879,1);
-  const shine=this.add.ellipse(-7,-7,9,4,0xffffff,.55);
-  const star=this.add.text(0,0,"✦",{fontFamily:"Arial",fontSize:"13px",color:"#a96d2d"}).setOrigin(.5);
-  coin.add([shadow,outer,face,shine,star]);return coin;
+  const shadow=this.add.ellipse(3,9,44,23,0x24476b,.24);
+  const outer=this.add.ellipse(0,0,42,34,0x9e5b24,1);
+  outer.setStrokeStyle(3,0x7c471e,1);
+  const face=this.add.ellipse(-1,-3,36,28,0xffd54f,1);face.setStrokeStyle(3,0xfff0a0,1);
+  const shine=this.add.ellipse(-8,-9,13,5,0xffffff,.8);
+  const star=this.add.text(0,0,"✦",{fontFamily:"Arial",fontSize:"17px",color:"#bd7625",stroke:"#fff0a0",strokeThickness:1}).setOrigin(.5);
+  coin.add([shadow,outer,face,shine,star]);
+  this.tweens.add({targets:coin,y:y-3,duration:900+Math.random()*300,yoyo:true,repeat:-1,ease:"Sine.easeInOut",delay:Math.random()*500});
+  return coin;
  }
  drawDreidel(){
-  this.dreidel=this.add.container(480,302);
-  this.dreidelShadow=this.add.ellipse(485,374,135,38,0x1e455b,.25);
+  this.dreidel=this.add.container(480,296);
+  this.dreidelShadow=this.add.ellipse(485,374,155,45,0x104c63,.3);
   const g=this.add.graphics();
-  // bevelled, softly cartoon body with gold trim
-  g.fillStyle(0x72473b,1);g.fillRoundedRect(-62,-70,124,132,23);
-  g.fillStyle(0xc98454,1);g.fillRoundedRect(-58,-76,116,128,22);
-  g.fillStyle(0xf2c58d,1);g.fillRoundedRect(-49,-69,98,112,17);
-  g.fillStyle(0xd99b63,1);g.fillRoundedRect(-40,-62,80,98,14);
-  g.fillStyle(0x8c5741,1);g.fillRoundedRect(-31,-53,62,80,10);
-  g.lineStyle(3,0xffd77c,1);g.strokeRoundedRect(-35,-57,70,88,12);
-  // top and rounded handle
-  g.fillStyle(0x805344,1);g.fillRoundedRect(-23,-96,46,30,14);
-  g.fillStyle(0xc9895c,1);g.fillRoundedRect(-20,-101,40,30,13);
-  g.fillStyle(0x6d493d,1);g.fillRoundedRect(-14,-123,28,29,12);
-  g.fillStyle(0xd99b67,1);g.fillRoundedRect(-11,-126,22,27,10);
-  g.fillStyle(0xffe4b2,.5);g.fillRoundedRect(-43,-55,9,77,4);
-  const letter=this.add.text(0,-6,"ג",{fontFamily:"Arial",fontSize:"58px",color:"#ffd36a",stroke:"#8e5b3d",strokeThickness:1}).setOrigin(.5);
-  this.dreidel.add([g,letter]);this.dreidelLetter=letter;
-  this.dreidel.setDepth(10);
+  // Bright enamel body, thick ink-like outline and layered bevels.
+  g.fillStyle(0x1c5d87,1);g.fillRoundedRect(-70,-72,140,142,30);g.lineStyle(8,0x174b70,1);g.strokeRoundedRect(-70,-72,140,142,30);
+  g.fillStyle(0x2a9fcb,1);g.fillRoundedRect(-63,-78,126,134,26);g.lineStyle(4,0x8de8f4,1);g.strokeRoundedRect(-63,-78,126,134,26);
+  g.fillStyle(0xff6b77,1);g.fillRoundedRect(-50,-64,100,108,19);g.lineStyle(4,0xffb6b2,1);g.strokeRoundedRect(-50,-64,100,108,19);
+  g.fillStyle(0xffcf4f,1);g.fillRoundedRect(-38,-52,76,86,15);g.lineStyle(4,0xfff0a0,1);g.strokeRoundedRect(-38,-52,76,86,15);
+  // large inset letter plate
+  g.fillStyle(0x8c4a85,1);g.fillRoundedRect(-30,-43,60,68,13);g.lineStyle(3,0xffa9dd,1);g.strokeRoundedRect(-30,-43,60,68,13);
+  // glossy side highlight
+  g.fillStyle(0xffffff,.6);g.fillRoundedRect(-54,-60,9,75,4);
+  // handle: golden stem and oversized plum cap
+  g.fillStyle(0xffb83e,1);g.fillRoundedRect(-25,-101,50,33,15);g.lineStyle(4,0xffed9a,1);g.strokeRoundedRect(-25,-101,50,33,15);
+  g.fillStyle(0x8c4a85,1);g.fillRoundedRect(-19,-126,38,31,14);g.lineStyle(4,0xdca6ed,1);g.strokeRoundedRect(-19,-126,38,31,14);
+  g.fillStyle(0xffe16b,1);g.fillCircle(0,-125,8);
+  const letter=this.add.text(0,-8,"ג",{fontFamily:"Arial",fontSize:"58px",color:"#fff0a0",stroke:"#69376f",strokeThickness:3}).setOrigin(.5);
+  this.dreidel.add([g,letter]);this.dreidelLetter=letter;this.dreidel.setDepth(10);
+  // idle anticipation: lively little bob and tilt.
+  this.tweens.add({targets:this.dreidel,y:292,rotation:.035,duration:760,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});
  }
  drawSparkles(){
   this.sparkles=[];
