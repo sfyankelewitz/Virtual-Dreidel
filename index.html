@@ -1,122 +1,40 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#171a22" />
-    <meta name="description" content="A shared virtual dreidel game for family and friends." />
-    <title>Virtual Dreidel — Family Game Build 55</title>
-  </head>
-  <body>
-    <div id="app">
-      <header class="topbar">
-        <a class="brand" href="#" aria-label="Virtual Dreidel home">
-          <span class="brand-mark">✡</span>
-          <span><strong>VIRTUAL DREIDEL</strong><small>FAMILY GAME NIGHT</small></span>
-        </a>
-        <div class="topbar-right">
-          <span class="room-tag"><i></i> LOCAL TABLE · FAMILY GAME</span>
-          <span class="prototype-tag">STORYBOOK GAME OVERHAUL 55</span>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#17233b" />
+  <title>Virtual Dreidel — Storybook Prototype</title>
+  <meta name="description" content="A cozy, fixed-camera animated dreidel game." />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#"><span class="brand-emblem">✦</span><span><b>VIRTUAL DREIDEL</b><small>FAMILY GAME NIGHT</small></span></a>
+      <div class="top-actions"><span class="status-pill"><i></i> LOCAL GAME</span><button id="soundButton" class="round-button" aria-label="Toggle sound" title="Sound">♫</button></div>
+    </header>
+    <main>
+      <section class="intro"><div><p class="eyebrow">A LITTLE HANUKKAH MAGIC</p><h1>Spin into the fun.</h1><p>One cozy game. A little luck. A lot of family.</p></div><div class="coin-total"><small>YOUR COINS</small><strong id="balance">100 <span>✦</span></strong></div></section>
+      <section class="game-layout">
+        <div class="game-frame">
+          <div class="game-frame-top"><span>THE DREIDEL NOOK</span><span class="fixed-label">✧ FIXED CAMERA · 2.5D</span></div>
+          <div id="game-canvas"></div>
+          <div class="game-caption"><span class="caption-dot"></span> YOUR TURN <b id="turnName">You</b><span class="caption-divider">·</span> POT <b id="pot">12</b> ✦</div>
         </div>
-      </header>
-
-      <main>
-        <section class="intro">
-          <div>
-            <p class="eyebrow">WELCOME TO GAME NIGHT</p>
-            <h1>Let the games begin.</h1>
-            <p class="subhead">A colorful, animated family dreidel night with a playful storybook game world.</p>
-          </div>
-          <div class="player-count"><span class="online-dot"></span><strong>4</strong><span>players · you + 3 computer opponents</span></div>
-        </section>
-
-        <section class="game-layout">
-          <div class="scene-card">
-            <div class="scene-topline">
-              <span>THE GAME TABLE</span>
-              <span class="scene-hint">Drag to orbit · Scroll to zoom</span>
-            </div>
-            <div id="render-host">
-              <canvas id="renderCanvas" aria-label="Interactive 3D dreidel table"></canvas>
-              <div class="scene-loading" id="sceneLoading">Preparing the table…</div>
-              <div class="scene-result" id="sceneResult" aria-live="polite"></div>
-              <div class="scene-controls">
-                <button class="icon-button" id="viewTable" title="Table view" aria-label="Table view">◉</button>
-                <button class="icon-button" id="viewRoom" title="Room view" aria-label="Room view">⌂</button>
-                <button class="icon-button" id="resetCamera" title="Reset camera" aria-label="Reset camera">⌖</button>
-                <button class="icon-button" id="soundToggle" title="Toggle sound" aria-label="Toggle sound">♫</button>
-                <button class="icon-button" id="fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>
-              </div>
-              <div class="scene-caption"><span class="caption-dot"></span> LOCAL GAME <span class="caption-separator">·</span> 3D TABLE</div>
-            </div>
-            <div class="scene-footer">
-              <div class="turn-indicator"><span class="turn-avatar">S</span><span><small>NOW SPINNING</small><strong id="activePlayer">You</strong></span></div>
-              <div class="pot-display"><small>COMMUNAL POT</small><strong><span>✦</span> <b id="potValue">12</b> <em>coins</em></strong></div>
-              <div class="round-display"><small>ROUND</small><strong id="roundValue">01</strong></div>
-            </div>
-          </div>
-
-          <aside class="side-panel">
-            <section class="panel-block">
-              <div class="panel-heading"><div><p class="eyebrow">YOUR TURN</p><h2>Make it count.</h2></div><span class="turn-pill" id="turnPill">YOUR TURN</span></div>
-              <div class="balance-card"><span>YOUR BALANCE</span><strong><b id="balanceValue">100</b><small>✦ coins</small></strong></div>
-              <label class="control-label" for="betAmount">YOUR BET</label>
-              <div class="bet-options" id="betOptions">
-                <button class="bet-option active" data-bet="1">1</button>
-                <button class="bet-option" data-bet="2">2</button>
-                <button class="bet-option" data-bet="5">5</button>
-                <button class="bet-option" data-bet="10">10</button>
-                <button class="bet-option" data-bet="20">20</button>
-                <button class="bet-option" data-bet="50">50</button>
-                <button class="bet-option all-in-option" data-bet="all">ALL IN</button>
-              </div>
-              <p class="bet-summary" id="betSummary">Wager 1 of your 100 coins</p>
-              <label class="control-label finish-label">DREIDEL FINISH</label>
-              <div class="finish-options">
-                <button class="finish-option dreidel-finish-option active" data-finish="walnut" data-name="Walnut" data-cost="0"><i class="finish-swatch walnut-swatch"></i><span class="finish-name">Walnut</span></button>
-                <button class="finish-option dreidel-finish-option" data-finish="midnight" data-name="Midnight" data-cost="35"><i class="finish-swatch midnight-swatch"></i><span class="finish-name">Midnight · 35</span></button>
-                <button class="finish-option dreidel-finish-option" data-finish="ivory" data-name="Ivory" data-cost="50"><i class="finish-swatch ivory-swatch"></i><span class="finish-name">Ivory · 50</span></button>
-              </div>
-              <label class="control-label finish-label">TABLE FINISH</label>
-              <div class="finish-options table-finish-options">
-                <button class="table-finish-option finish-option active" data-finish="walnut" data-name="Walnut" data-cost="0"><i class="finish-swatch walnut-swatch"></i><span class="finish-name">Walnut</span></button>
-                <button class="table-finish-option finish-option" data-finish="ebony" data-name="Ebony" data-cost="40"><i class="finish-swatch ebony-swatch"></i><span class="finish-name">Ebony · 40</span></button>
-                <button class="table-finish-option finish-option" data-finish="honey" data-name="Honey" data-cost="55"><i class="finish-swatch honey-swatch"></i><span class="finish-name">Honey · 55</span></button>
-              </div>
-              <button class="spin-button" id="spinButton"><span class="spin-icon">↻</span><span>SPIN DREIDEL</span><span class="spin-arrow">→</span></button>
-              <p class="turn-note" id="turnNote">Your turn. Choose your wager and spin.</p>
-              <p class="keyboard-hint">SPACE · SPIN &nbsp;&nbsp; N · NEW GAME</p>
-            </section>
-
-            <section class="panel-block players-block">
-              <div class="section-heading"><h3>AT THE TABLE</h3><span>4 PLAYERS</span></div>
-              <div class="player-row active" data-player="0"><span class="player-avatar avatar-gold">S</span><span class="player-info"><strong class="player-name">You</strong><small>Playing now</small></span><button class="rename-player" data-player="0" aria-label="Rename You">✎</button><span class="player-balance" id="playerBalance0">100</span></div>
-              <div class="player-row" data-player="1"><span class="player-avatar avatar-rose">S</span><span class="player-info"><strong class="player-name">Sarah</strong><small>Ready</small></span><button class="rename-player" data-player="1" aria-label="Rename Sarah">✎</button><span class="player-balance" id="playerBalance1">100</span></div>
-              <div class="player-row" data-player="2"><span class="player-avatar avatar-blue">D</span><span class="player-info"><strong class="player-name">David</strong><small>Ready</small></span><button class="rename-player" data-player="2" aria-label="Rename David">✎</button><span class="player-balance" id="playerBalance2">100</span></div>
-              <div class="player-row" data-player="3"><span class="player-avatar avatar-green">M</span><span class="player-info"><strong class="player-name">Moishe</strong><small>Ready</small></span><button class="rename-player" data-player="3" aria-label="Rename Moishe">✎</button><span class="player-balance" id="playerBalance3">100</span></div>
-            </section>
-
-            <section class="panel-block record-block">
-              <div class="section-heading"><h3>YOUR RECORD</h3><span>ALL GAMES</span></div>
-              <div class="record-grid"><div><strong id="gamesWon">0</strong><small>WINS</small></div><div><strong id="gamesLost">0</strong><small>LOSSES</small></div></div>
-              <button id="dailyBonus" class="daily-bonus">CLAIM DAILY +10 COINS</button>
-            </section>
-            <section class="panel-block history-block">
-              <div class="section-heading"><h3>GAME ACTIVITY</h3><button id="newGame" class="text-button">New game ↗</button></div>
-              <div id="activityLog" class="activity-log"><p><span>✦</span> The family table is open.</p><p><span>✦</span> Four players have joined.</p></div>
-            </section>
-          </aside>
-        </section>
-
-        <section class="rules-panel"><div class="rules-heading"><p class="eyebrow">THE CLASSIC RULES</p><h2>What the dreidel says.</h2></div><div class="rules-grid"><div class="rule-card"><b>נ</b><span><strong>NUN</strong><small>Nothing happens. Play passes.</small></span></div><div class="rule-card"><b>ג</b><span><strong>GIMEL</strong><small>Take the entire pot.</small></span></div><div class="rule-card"><b>ה</b><span><strong>HEY</strong><small>Take half the pot.</small></span></div><div class="rule-card"><b>ש</b><span><strong>SHIN</strong><small>Add one coin to the pot.</small></span></div></div></section>
-
-        <section class="below-grid">
-          <div class="feature-note"><span class="note-icon">✧</span><div><strong>A complete local dreidel game with computer opponents.</strong><p>Customize the dreidel and table, build your coin balance, and play through a full local match.</p></div></div>
-          <div class="feature-note"><span class="note-icon">◈</span><div><strong>Family game night, wherever you are.</strong><p>This build includes local computer opponents. Online multiplayer and live family video are future milestones.</p></div></div>
-        </section>
-      </main>
-      <footer><span>VIRTUAL DREIDEL</span><span>BUILT FOR FAMILY, WHEREVER YOU ARE.</span><span class="asset-credit">3D FURNITURE: POLY HAVEN · CC0</span></footer>
-    </div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+        <aside class="controls-card">
+          <div class="card-heading"><p class="eyebrow">MAKE YOUR MOVE</p><h2>Ready to spin?</h2></div>
+          <div class="bet-header"><span>YOUR WAGER</span><strong id="wagerLabel">5 coins</strong></div>
+          <div class="bet-grid" id="betGrid"><button data-bet="1">1</button><button data-bet="2">2</button><button data-bet="5" class="selected">5</button><button data-bet="10">10</button><button data-bet="20">20</button><button data-bet="all">ALL IN</button></div>
+          <button id="spinButton" class="spin-button"><span>↻</span> SPIN DREIDEL <b>→</b></button>
+          <p class="status-message" id="statusMessage">Place your wager, then give it a spin!</p>
+          <div class="players"><div class="players-title"><span>AT THE TABLE</span><small>4 PLAYERS</small></div><div class="player-line active" id="player0"><i class="avatar avatar-you">Y</i><span><b>You</b><small>Your turn</small></span><strong>100</strong></div><div class="player-line" id="player1"><i class="avatar avatar-pink">S</i><span><b>Sarah</b><small>Ready to play</small></span><strong>100</strong></div><div class="player-line" id="player2"><i class="avatar avatar-blue">D</i><span><b>David</b><small>Ready to play</small></span><strong>100</strong></div><div class="player-line" id="player3"><i class="avatar avatar-green">M</i><span><b>Moishe</b><small>Ready to play</small></span><strong>100</strong></div></div>
+          <button id="newGame" class="new-game">↻ &nbsp; Start a new game</button>
+        </aside>
+      </section>
+      <section class="rules"><div><p class="eyebrow">THE FOUR LETTERS</p><h2>What will it be?</h2></div><div class="rules-row"><article><b>נ</b><span><strong>NUN</strong><small>Nothing</small></span></article><article><b>ג</b><span><strong>GIMEL</strong><small>Take the pot</small></span></article><article><b>ה</b><span><strong>HEY</strong><small>Take half</small></span></article><article><b>ש</b><span><strong>SHIN</strong><small>Add a coin</small></span></article></div></section>
+      <footer><span>VIRTUAL DREIDEL</span><span>Made for family, wherever you are.</span></footer>
+    </main>
+  </div>
+  <script type="module" src="/src/phaser-main.js"></script>
+</body>
 </html>
